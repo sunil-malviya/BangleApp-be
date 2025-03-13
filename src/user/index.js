@@ -1,7 +1,7 @@
 `use strict`;
 import express from 'express';
 const router = express.Router();
-import  {validateRequest}  from '../../utils/helper.js';
+import  {validateRequest}  from '../../utils/fieldValidation.js';
 import { sendOtpSchema,verifyOtpSchema,registerSchema } from './authSchema.js';
 import { sendOtp,verifyOtp,registerUserWithOrganization } from './authService.js';
 
