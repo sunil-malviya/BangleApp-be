@@ -28,7 +28,7 @@ model User {
 model Organization {
   id         String           @id @default(uuid())
   orgName    String
-  orgMobile  String           @unique
+  orgMobile  String           
   orgEmail   String?
   orgPincode String
   orgCity    String
