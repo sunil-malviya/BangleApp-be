@@ -49,6 +49,8 @@ model Organization {
 
   userId String @unique
   user   User   @relation(fields: [userId], references: [id])
+  designs Design[] 
+ 
 }
 
 enum OrganizationType {
@@ -61,4 +63,24 @@ enum OrganizationType {
 enum Status {
   ACTIVE
   INACTIVE
+}
+
+
+
+model Design{
+  id             String   @id @default(uuid()) 
+  name           String
+  image          String
+  images         String[]
+  sizeFrom       String  
+  sizeTo         String    
+
+  colorValue     String[] 
+  rate           String   
+  details        String  
+  organizationId String   
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade) 
+  
+  createdAt      DateTime @default(now()) 
+  updatedAt      DateTime @updatedAt // Auto-updated timestamp
 }
