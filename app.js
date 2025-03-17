@@ -16,7 +16,6 @@ import manufacturerRouter from './src/Manufacturer/index.js';
 import pipeMakerRouter from './src/PipeMaker/index.js';
 import {responseHandler} from './utils/apiResponse.js'
 import helperRouter from './src/helper/index.js'
-import DesignRouter from './src/Manufacturer/Design/design.routes.js'
 import custommethod from "./middleware/validator/customMethods.js";
 
 // ---------------------------------------------------------------------
@@ -70,7 +69,7 @@ app.use('/karigar', karigarRouter);
 app.use('/manufacturer', manufacturerRouter);
 app.use('/pipeMaker', pipeMakerRouter);
 app.use('/api/helper',helperRouter)
-app.use('/api/design',DesignRouter)
+
 
 
 

@@ -25,15 +25,6 @@ export const verifyOtpSchema = [
     .escape()
     .customSanitizer((value) => value.replace(/[^0-9]/g, "")), // Remove non-numeric characters
 
-  // body("verificationId")
-  //   .trim()
-  //   .notEmpty()
-  //   .withMessage("Verification ID is required")
-  //   .isString()
-  //   .withMessage("Invalid Verification ID format")
-  //   .isLength({ min: 7, max: 10 })
-  //   .withMessage("Verification ID must be 7 characters"),
-
   body("otp")
     .trim()
     .notEmpty()
