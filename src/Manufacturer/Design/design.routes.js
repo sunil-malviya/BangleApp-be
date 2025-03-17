@@ -24,7 +24,7 @@ const uploader = new UploadTo({ dir: "designs", isImage: true, fileSize: 5 });
 
 /**
  * @swagger
- * /api/design:
+ * /manufacturer/design:
  *   get:
  *     summary: Get all designs
  *     tags: [Designs]  # ✅ ADD TAGS TO GROUP ROUTES
@@ -38,7 +38,7 @@ const uploader = new UploadTo({ dir: "designs", isImage: true, fileSize: 5 });
 router.get("/",  tokenvalidate,DesignController.getAllDesigns);
 /**
  * @swagger
- * /api/design:
+ * /manufacturer/design:
  *   post:
  *     summary: Create a new design
  *     tags: [Designs]
@@ -103,7 +103,7 @@ router.post(
 
 /**
  * @swagger
- * /api/design/{id}:
+ * /manufacturer/design/{id}:
  *   get:
  *     summary: Get a design by ID
  *     tags: [Designs]
@@ -125,7 +125,7 @@ router.get("/:id", DesignController.getDesignById);
 
 /**
  * @swagger
- * /api/design/{id}:
+ * /manufacturer/design/{id}:
  *   put:
  *     summary: Update a design
  *     tags: [Designs]
@@ -196,7 +196,7 @@ showParametersErrors,
 tokenvalidate, DesignController.updateDesign);
 /**
  * @swagger
- * /api/design/{id}:
+ * /manufacturer/design/{id}:
  *   delete:
  *     summary: Delete a design
  *     tags: 
