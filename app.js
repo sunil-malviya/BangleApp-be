@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import  cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import cors from 'cors';
+import setupSwagger from './utils/swagger.js';
 
 // Import your local route modules (adjust file extensions if needed)
 import indexRouter from './routes/index.js';
@@ -15,6 +16,8 @@ import manufacturerRouter from './src/Manufacturer/index.js';
 import pipeMakerRouter from './src/PipeMaker/index.js';
 import {responseHandler} from './utils/apiResponse.js'
 import helperRouter from './src/helper/index.js'
+import DesignRouter from './src/Manufacturer/Design/design.routes.js'
+import custommethod from "./middleware/validator/customMethods.js";
 
 // ---------------------------------------------------------------------
 // Recreate __dirname in ESM
@@ -58,6 +61,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 // ---------------------------------------------------------------------
 // Routes
 // ---------------------------------------------------------------------
+
+app.use(custommethod);
 app.use('/', indexRouter);
 app.use('/auth', authRouter);
 app.use('/agent', agentRouter);
@@ -65,6 +70,13 @@ app.use('/karigar', karigarRouter);
 app.use('/manufacturer', manufacturerRouter);
 app.use('/pipeMaker', pipeMakerRouter);
 app.use('/api/helper',helperRouter)
+app.use('/api/design',DesignRouter)
+
+
+
+
+setupSwagger(app); 
+
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
@@ -83,6 +95,7 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500);
   res.render('error');
 });
+
 
 // ---------------------------------------------------------------------
 // Export the app (ESM style)
