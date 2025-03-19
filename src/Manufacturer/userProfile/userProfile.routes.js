@@ -65,7 +65,7 @@ const uploader = new UploadTo({ dir: "designs", isImage: true, fileSize: 5 });
 
 router.put(
   "/:id",
-  tokenvalidate, 
+  // tokenvalidate, 
   // uploader.array("image", 1), 
   // checkInput("add_design"),
   // showParametersErrors,
