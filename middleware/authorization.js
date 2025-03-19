@@ -5,6 +5,7 @@ export default async (req, res, next) => {
     if (req.originalUrl.startsWith("/uploads/")) return next();
 
     const authHeader = req.headers.authorization;
+
     if (!authHeader) {
       return res.status(403).json({
         status: false,
