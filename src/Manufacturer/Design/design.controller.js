@@ -4,6 +4,7 @@ import {
   UploadTo,
   deleteFile,
 } from "./../../../middleware/validator/Storage.js";
+import { json } from "stream/consumers";
 class DesignController {
   static async createDesign(req, res) {
     try {
@@ -13,7 +14,8 @@ class DesignController {
         "sizeFrom",
         "sizeTo",
         "rate",
-        "colorValue",
+        "colors",
+        "details",
       ]);
 
       if (req.files && req.files.length > 0) {
@@ -22,15 +24,13 @@ class DesignController {
       }
 
       body.organizationId = req.user.organization.id;
-      body.colorValue = body?.colorValue?.split(",").map((v) => v.trim());
+      if (body.colors) {
+        body.colors = JSON.parse(body.colors);
+      }
 
       const design = await DesignService.createDesign(body);
 
-      res.status(200).json({
-        status: true,
-        data: design,
-        message: "Designs created successfully",
-      });
+      res.success(design);
     } catch (error) {
       console.log(error);
       res.someThingWentWrong(error);
@@ -50,22 +50,18 @@ class DesignController {
       if (Array.isArray(designs)) {
         designs.forEach((design) => {
           if (design.image) {
-            design.image = getFullImagePath(design.image, "Design", req);
+            design.image = getFullImagePath(design.image, "designs", req);
           }
 
           if (Array.isArray(design.images)) {
             design.images = design.images.map((img) =>
-              getFullImagePath(img, "Design", req)
+              getFullImagePath(img, "designs", req)
             );
           }
         });
       }
 
-      res.status(200).json({
-        status: true,
-        data: designs,
-        message: "Designs fetched successfully",
-      });
+      res.success(designs);
     } catch (error) {
       res.someThingWentWrong(error);
     }
@@ -74,15 +70,12 @@ class DesignController {
   static async getDesignById(req, res) {
     try {
       const design = await DesignService.getDesignById(req.params.id);
-      if (!design) return res.status(404).json({status:false, message: "Design not found",data:null});
+      if (!design)
+        return res
+          .status(404)
+          .json({ status: false, message: "Design not found", data: null });
 
-
-
-      res.status(200).json({
-        status: true,
-        data: design,
-        message: "Designs fetched successfully",
-      });
+      res.success(design);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -110,7 +103,7 @@ class DesignController {
       ]);
 
       if (req.files && req.files.length > 0) {
-        deleteFile(record.images,"designs");
+        deleteFile(record.images, "designs");
 
         body.images = req.files.map((file) => file.filename);
         body.image = body.images[0];
@@ -119,12 +112,8 @@ class DesignController {
       body.colorValue = body?.colorValue?.split(",").map((v) => v.trim());
 
       const design = await DesignService.updateDesign(id, body);
-    
-      return res.status(200).json({
-        status: true,
-        data: design,
-        message: "Designs updated successfully",
-      });
+
+      return res.success(design);
     } catch (error) {
       res.someThingWentWrong(error);
     }
@@ -133,7 +122,7 @@ class DesignController {
   static async deleteDesign(req, res) {
     try {
       await DesignService.deleteDesign(req.params.id);
-      res.status(204).send();
+      res.success("Design deleted successfully");
     } catch (error) {
       res.someThingWentWrong(error);
     }

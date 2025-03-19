@@ -94,7 +94,7 @@ router.get("/",  tokenvalidate,DesignController.getAllDesigns);
 
 router.post(
   "/",
-  uploader.array("image", 4),
+  uploader.array("images", 4),
   checkInput("add_design"),
   showParametersErrors,
   tokenvalidate,

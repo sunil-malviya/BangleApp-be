@@ -5,8 +5,8 @@ export const getFullImagePath = (filenames, dir, req) => {
   
     let folder;
     switch (dir) {
-      case "Design":
-        folder = "Design";
+      case "designs":
+        folder = "designs";
         break;
       case "organization":
         folder = "organization";
