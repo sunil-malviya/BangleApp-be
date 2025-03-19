@@ -40,7 +40,7 @@ const {
   status,
   cms_contant,
   verification_img,
-  image,
+  images,
   type,
   title,
   message,
@@ -66,7 +66,7 @@ const {
   ID_Proof_Type,
   baseName,
   rate,
-  colorValue,
+  colors,
   details,
   color,
   sizeTo,
@@ -100,12 +100,12 @@ const checkInput =  (method) => {
  
   switch (method) {
     case "add_design":
-      return [baseName, rate, colorValue, sizeTo, sizeFrom,image];
+      return [baseName, rate, colors, sizeTo, sizeFrom,images];
 
 
 
     case "fileUploads":
-      return [image];
+      return [images];
 
     default:
       return [];

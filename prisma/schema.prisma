@@ -75,7 +75,7 @@ model Design{
   sizeFrom       String  
   sizeTo         String    
 
-  colorValue     String[] 
+  colors     String[] 
   rate           String   
   details        String  
   organizationId String   

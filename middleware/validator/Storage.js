@@ -18,6 +18,7 @@ export class UploadTo {
     const fileFilter = (req, file, cb) => {
       const reqSize = parseInt(req.headers["content-length"]);
 
+  
       if (reqSize && reqSize > maxAllowSize) {
         req.fileValidationError = {
           [file.fieldname]: "Uploaded file is too large to upload..!!",
@@ -80,6 +81,7 @@ export class UploadTo {
   }
 
   array(fieldName, maxCount = 5) {
+
     return this.upload.array(fieldName, maxCount);
   }
 

@@ -116,33 +116,24 @@ const validationRules = {
 
   //----------------------------------------------------------------------------//
 
-  sizeFrom: body("sizeFrom")
-    .exists()
-    .withMessage("SizeFrom is required")
-    .isFloat()
-    .withMessage("SizeFrom must be a float value"),
-  sizeTo: body("sizeTo")
-    .exists()
-    .withMessage("SizeTo is required")
-    .isFloat()
-    .withMessage("SizeTo must be a float value"),
+  sizeFrom: body("sizeFrom").exists().withMessage("field is required"),
 
-    colorValue: body("colorValue")
+  sizeTo: body("sizeTo").exists().withMessage("field is required"),
+
+  colors: body("colors")
     .optional()
     .custom((value, { req }) => {
-      console.log("Before conversion:", value);
-  
       if (!Array.isArray(value)) {
-        req.body.colorValue = value.split(",").map(v => v.trim());
+        req.body.colors = value.split(",").map((v) => v.trim());
       }
-  
-      console.log("After conversion:", req.body.colorValue);
-  
-      // Validate that all elements in the array are strings
-      if (!Array.isArray(req.body.colorValue) || req.body.colorValue.some(v => typeof v !== "string")) {
+
+      if (
+        !Array.isArray(req.body.colors) ||
+        req.body.colors.some((v) => typeof v !== "string")
+      ) {
         throw new Error("Color value must be an array of strings.");
       }
-  
+
       return true;
     }),
 
@@ -152,7 +143,7 @@ const validationRules = {
     .isFloat({ gt: 0 })
     .withMessage("Rate must be a valid number greater than 0"),
 
-  image: body("image", "You must select an image.")
+  images: body("images", "You must select an image.")
     .custom((value, { req }) => {
       const files = req.files || (req.file ? [req.file] : []);
       return files.length > 0;
