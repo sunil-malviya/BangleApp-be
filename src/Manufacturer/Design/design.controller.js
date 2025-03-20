@@ -98,7 +98,7 @@ class DesignController {
         "sizeFrom",
         "sizeTo",
         "rate",
-        "colorValubodye",
+        "colorValue",
         "images",
       ]);
 

@@ -13,7 +13,8 @@ import {
 } from "./../../../middleware/validator/Storage.js";
 import tokenvalidate from "./../../../middleware/authorization.js";
 
-const uploader = new UploadTo({ dir: "designs", isImage: true, fileSize: 5 });
+// const uploader = new UploadTo({ dir: "designs", isImage: true, fileSize: 5 });
+const uploader = new UploadTo({ dir: "profile", isImage: true, fileSize: 5 });
 
 /**
  * @swagger
@@ -64,9 +65,9 @@ const uploader = new UploadTo({ dir: "designs", isImage: true, fileSize: 5 });
  */
 
 router.put(
-  "/:id",
-  // tokenvalidate, 
-  // uploader.array("image", 1), 
+  "/",
+  tokenvalidate, 
+  uploader.single("image"), 
   // checkInput("add_design"),
   // showParametersErrors,
   userProfileController.updateUserProfile

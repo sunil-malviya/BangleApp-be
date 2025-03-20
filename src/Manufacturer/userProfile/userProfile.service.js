@@ -1,33 +1,36 @@
 import Prisma from './../../../db/prisma.js';
 
-class designservice {
+class userProfileService {
 
-  static async createDesign(data) {
-    return await Prisma.Design.create({ data });
+  static async getUserById(id) {
+    return await Prisma.user.findMany({
+      where: { id }
+    });
   }
 
-  static async getAllDesigns({ page = 1, pageSize = 10, orderBy = "name", order = "desc", filters = {} }) {
-    return await Prisma.Design.findMany({
-      where: filters, // Apply conditions
-      skip: (page - 1) * pageSize, // Pagination logic
-      take: pageSize, // Number of items per page
-      orderBy: {
-        [orderBy]: order, // Ordering logic
+  static async updateProfileById(id, data) {
+    return await Prisma.user.update({
+      where: { id },
+      data: {
+        fullName: data.name,
+        email: data.email,
+        image: data.image,
+        organization: {
+          update: {
+            orgAddress: data.address, // ✅ Organization ka address bhi update hoga
+          },
+        },
+      },
+      include: {
+        organization: true, // ✅ Updated organization data return karega
       },
     });
   }
-  
-  static async getDesignById(id) {
-    return await Prisma.Design.findUnique({ where: { id } });
-  }
 
-  static async updateDesign(id, data) {
-    return await Prisma.Design.update({ where: { id }, data });
-  }
 
-  static async deleteDesign(id) {
-    return await Prisma.Design.delete({ where: { id } });
-  }
+
+
+
 }
 
-export default designservice;
+export default userProfileService;
