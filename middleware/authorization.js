@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import Prisma from './../db/prisma.js';
+import Prisma from "./../db/prisma.js";
 export default async (req, res, next) => {
   try {
     if (req.originalUrl.startsWith("/uploads/")) return next();
@@ -24,19 +24,15 @@ export default async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
- 
 
     const User = await Prisma.user.findUnique({
       where: {
         id: decoded.userId, // Ensure 'userId' matches your JWT payload key
       },
       include: {
-     
-        organization: true,    // Include user roles
+        organization: true, // Include user roles
       },
     });
-    
-
 
     if (!User) {
       return res.status(404).json({
@@ -47,7 +43,7 @@ export default async (req, res, next) => {
     }
 
     req.user_id = decoded.userId;
-    req.user = User
+    req.user = User;
     next();
   } catch (err) {
     console.error("JWT Error:", err);

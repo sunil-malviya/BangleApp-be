@@ -35,9 +35,12 @@ app.set('view engine', 'jade');
 
 // middleware
 app.use(morgan('dev'));
-app.use(express.json());
+
+app.use(express.json({ type: "application/json", limit: "50mb" }));
+
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(responseHandler);
-app.use(express.urlencoded({ extended: false }));
+
 app.use(cookieParser());
 
 const corsOptions = {
