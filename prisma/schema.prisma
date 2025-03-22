@@ -72,11 +72,11 @@ model Design{
   name           String
   image          String
   images         String[]
-  sizeFrom       String  
-  sizeTo         String    
+  sizeFrom       Float   
+  sizeTo         Float     
 
   colors     String[] 
-  rate           String   
+  rate            Float      
   details        String  
   organizationId String   
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade) 

@@ -190,10 +190,12 @@ router.get("/:id", DesignController.getDesignById);
  *         description: Internal server error
  */
 
-router.put("/:id",uploader.array("image", 4),
+router.put("/:id",
+  tokenvalidate,
+  uploader.array("images", 4),
 checkInput("add_design"),
 showParametersErrors,
-tokenvalidate, DesignController.updateDesign);
+ DesignController.updateDesign);
 /**
  * @swagger
  * /manufacturer/design/{id}:
@@ -224,6 +226,15 @@ tokenvalidate, DesignController.updateDesign);
  *         description: Internal server error
  */
 
-router.delete("/:id", DesignController.deleteDesign);
+// Define the static route first.
+router.delete("/bulk-delete", DesignController.bulkdeleteDesign);
+
+// Then define the dynamic route with a UUID regex.
+router.delete(
+  "/:id([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})",
+  DesignController.deleteDesign
+);
+
+
 
 export default router;
