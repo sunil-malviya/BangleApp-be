@@ -4,11 +4,13 @@ const router = express.Router();
 import testRoute from './test/index.js'
 import designRoute from './Design/design.routes.js'
 import userProfileRoute from './userProfile/userProfile.routes.js'
+import masterRoute from './master/master.routes.js'
 
 
 router.use('/test', testRoute);
 router.use('/design', designRoute);
 router.use('/user', userProfileRoute);
+router.use('/master', masterRoute);
 
 
 
