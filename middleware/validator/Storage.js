@@ -53,7 +53,7 @@ export class UploadTo {
 
     const storage = multer.diskStorage({
       destination: (req, file, cb) => {
-        const pathToSave = `public/uploads/${dir}`;
+        const pathToSave = `public/uploads/${dir}`;        
         fs.mkdirSync(pathToSave, { recursive: true });
         cb(null, pathToSave);
       },
@@ -96,7 +96,6 @@ export const deleteFile = (deleteFiles, dir) => {
 
     // Convert to an array if it's a single string
     const files = Array.isArray(deleteFiles) ? deleteFiles : [deleteFiles];
-
     files.forEach((file) => {
       if (!file) return;
 
