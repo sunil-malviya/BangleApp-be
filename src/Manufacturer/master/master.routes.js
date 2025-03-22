@@ -35,10 +35,13 @@ const uploader = new UploadTo({ dir: "designs", isImage: true, fileSize: 5 });
  *       200:
  *         description: Successfully retrieved list of designs
  */
-// router.get("/",  tokenvalidate,MasterController.getAllDesigns);
-router.get("/", (req, res) => {
-  res.send("Hello, this is the GET route!");
-});
+router.get("/:id?", 
+  tokenvalidate,
+  // checkInput("organization_id"),
+  // showParametersErrors,
+  MasterController.getMaster
+)
+
 /**
  * @swagger
  * /manufacturer/design:
@@ -123,7 +126,12 @@ router.get("/", (req, res) => {
  *       404:
  *         description: Design not found
  */
-router.get("/:id", MasterController.getDesignById);
+// router.get("/:id", 
+//   tokenvalidate,
+//   // checkInput("organization_id"),
+//   // showParametersErrors,
+//   MasterController.getByIdMaster
+// )
 
 /**
  * @swagger
@@ -192,12 +200,11 @@ router.get("/:id", MasterController.getDesignById);
  *         description: Internal server error
  */
 
-router.put("/:id",
+router.post("/",
   tokenvalidate,
-  uploader.array("images", 4),
-checkInput("add_design"),
-showParametersErrors,
- MasterController.updateDesign);
+  checkInput("create_master"),
+  showParametersErrors,
+ MasterController.createMaster);
 /**
  * @swagger
  * /manufacturer/design/{id}:
@@ -228,15 +235,47 @@ showParametersErrors,
  *         description: Internal server error
  */
 
-// Define the static route first.
-router.delete("/bulk-delete", MasterController.bulkdeleteDesign);
 
-// Then define the dynamic route with a UUID regex.
-router.delete(
-  "/:id([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})",
-  MasterController.deleteDesign
-);
+router.put("/:id",
+  tokenvalidate,
+  checkInput("create_master"),
+  showParametersErrors,
+  MasterController.updateByIdMaster);
+/**
+ * @swagger
+ * /manufacturer/design/{id}:
+ *   delete:
+ *     summary: Delete a design
+ *     tags: 
+ *       - Designs
+ *     description: Remove a design from the database.
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID of the design to delete
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successfully deleted the design
+ *       400:
+ *         description: Bad request (invalid ID format)
+ *       401:
+ *         description: Unauthorized (invalid or missing JWT token)
+ *       404:
+ *         description: Design not found
+ *       500:
+ *         description: Internal server error
+ */
 
+router.delete("/:id",
+  tokenvalidate,
+  // checkInput("create_master"),
+  // showParametersErrors,
+  MasterController.deleteByIdMaster);
 
 
 export default router;

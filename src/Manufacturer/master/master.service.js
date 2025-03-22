@@ -2,46 +2,62 @@ import Prisma from './../../../db/prisma.js';
 
 class designservice {
 
-  static async createDesign(data) {
-    return await Prisma.design.create({ data });
-  }
 
-  static async getAllDesigns({ page = 1, pageSize = 100, orderBy = "name", order = "desc", filters = {} }) {
-    return await Prisma.design.findMany({
-      where: filters, // Apply conditions
-      skip: (page - 1) * pageSize, // Pagination logic
-      take: pageSize, // Number of items per page
-      orderBy: {
-        [orderBy]: order, // Ordering logic
-      },
-    });
-  }
-  
-  static async getDesignById(id) {
-    return await Prisma.design.findUnique({ where: { id } });
-  }
-
-  static async updateDesign(id, data) {
-    return await Prisma.design.update({ where: { id }, data });
-  }
-
-  static async deleteDesign(id) {
-    return await Prisma.design.delete({ where: { id } });
-  }
-
-
-
-
-  static async getDesignByIds(ids) {
-    return await Prisma.design.findMany({
+  static async isExist(data) {
+    return await Prisma.worker.findMany({
       where: {
-        id: {
-          in: ids,
-        },
-      },
+        organizationId: data.organizationId,
+        mobile: data.mobile
+      }
     });
   }
-  
+
+  static async createMaster(data) {
+    return await Prisma.worker.create({ data });
+  }
+
+  static async fetchMaster(condition) {
+    return await Prisma.worker.findMany({where: condition });
+  }
+
+  static async fetchByIdMaster(organizationId, masterId) {
+    return await Prisma.worker.findMany({
+      where: {
+        organizationId: organizationId,
+        id: masterId
+      }
+    });
+  }
+
+  static async updateMasterById(masterId, data) {
+    return await Prisma.worker.update({
+      where: {
+        id: masterId
+      },
+      data: data
+    });
+  }
+
+
+  static async isExistId(organizationId, masterId) {
+    return await Prisma.worker.findMany({
+      where: {
+        organizationId: organizationId,
+        id: masterId
+      }
+    });
+  }
+
+  static async deleteMasterById(organizationId, masterId) {
+    return await Prisma.worker.delete({
+      where: {
+        organizationId: organizationId,
+        id: masterId
+      }
+    });
+  }
+
+
 }
 
 export default designservice;

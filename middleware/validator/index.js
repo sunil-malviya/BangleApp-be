@@ -36,6 +36,7 @@ const {
   password,
   token,
   new_password,
+  fullName,
   name,
   status,
   cms_contant,
@@ -71,6 +72,8 @@ const {
   color,
   sizeTo,
   sizeFrom,
+  shopName,
+  workerType
 
 } = validationRules.default;
 
@@ -96,13 +99,17 @@ const showParametersErrors = (req, res, next) => {
   next();
 };
 
-const checkInput =  (method) => {
- 
+const checkInput = (method) => {
+
   switch (method) {
     case "add_design":
-      return [baseName, rate, colors, sizeTo, sizeFrom,images];
+      return [baseName, rate, colors, sizeTo, sizeFrom, images];
 
-
+    case "organization_id":
+      return [organization_id];
+      
+    case "create_master":
+      return [fullName, mobile, shopName, workerType,];
 
     case "fileUploads":
       return [images];
@@ -135,4 +142,4 @@ const asyncValidate = (method) => {
   }
 };
 
-export  { checkInput, asyncValidate, showParametersErrors };
+export { checkInput, asyncValidate, showParametersErrors };
