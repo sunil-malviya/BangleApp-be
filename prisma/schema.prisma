@@ -85,7 +85,7 @@ model Design{
 
 model Worker {
   id             String        @id @default(uuid())
-  fullname       String
+  fullName       String
   mobile         String        @unique
   address        String
   shopName       String
