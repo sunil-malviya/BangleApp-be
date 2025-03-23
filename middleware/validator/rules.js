@@ -27,6 +27,14 @@ const validationRules = {
     .withMessage("Role ID Must Be Digit Only."),
   id: query("id", "Record ID Required!").exists().notEmpty(),
   slug: param("slug", "CMS Slug Required!").exists().notEmpty(),
+  fullName: body("fullName")
+  .exists()
+  .notEmpty()
+  .withMessage("Name is required.")
+  .isString()
+  .withMessage("Name must be a string.")
+  .isLength({ min: 3, max: 100 })
+  .withMessage("Name must be between 3 and 100 characters."),
   firstname: body("firstname")
     .exists()
     .notEmpty()
@@ -51,7 +59,7 @@ const validationRules = {
   ID_Proof_Type: body("id_type", "ID Proof Type Required!").exists().notEmpty(),
   ID_Number: body("id_number", "ID Number Required!").exists().notEmpty(),
   employee_id: body("employee_id", "Employee ID Required!").exists().notEmpty(),
-  mobile: body("mobile", "Mobile No Required!").exists().notEmpty(),
+  mobile: body("mobile", "Mobile no: is Required!").exists().notEmpty(),
   otp: body("otp", "OTP Required!").exists().notEmpty(),
   email: body("email", "Invalid Email!")
     .exists()
@@ -113,8 +121,24 @@ const validationRules = {
     .notEmpty()
     .isNumeric()
     .withMessage("Months must be a number."),
-
-  //----------------------------------------------------------------------------//
+    shopName: body("shopName")
+    .exists()
+    .notEmpty()
+    .withMessage("Shop name is required.")
+    .isString()
+    .withMessage("Shop name must be a string.")
+    .isLength({ min: 3, max: 100 })
+    .withMessage("Shop name must be between 3 and 100 characters."),
+    workerType: body("workerType")
+    .exists()
+    .withMessage("Worker type is required.")
+    .notEmpty()
+    .withMessage("Worker type cannot be empty.")
+    .isString()
+    .withMessage("Worker type must be a string.")
+    .isIn(["KARIGAR", "AGENT", "PIPEMAKER"])
+    .withMessage("Worker type must be one of: KARIGAR, AGENT, PIPEMAKER"),
+      //----------------------------------------------------------------------------//
 
   sizeFrom: body("sizeFrom").exists().withMessage("field is required"),
 

@@ -65,8 +65,6 @@ enum Status {
   INACTIVE
 }
 
-
-
 model Design{
   id             String   @id @default(uuid()) 
   name           String
@@ -83,4 +81,23 @@ model Design{
   
   createdAt      DateTime @default(now()) 
   updatedAt      DateTime @updatedAt // Auto-updated timestamp
+}
+
+model Worker {
+  id             String        @id @default(uuid())
+  fullName       String
+  mobile         String        @unique
+  address        String
+  shopName       String
+  workerType     workerType
+  organizationId String
+  status         Int           @default(1)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+enum workerType {
+  KARIGAR
+  AGENT
+  PIPEMAKER
 }
