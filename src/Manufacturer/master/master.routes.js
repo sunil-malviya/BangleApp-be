@@ -4,16 +4,11 @@ const router = express.Router();
 import MasterController from "./master.controller.js";
 import {
   checkInput,
-  asyncValidate,
+
   showParametersErrors,
 } from "./../../../middleware/validator/index.js";
-import {
-  UploadTo,
-  deleteFile,
-} from "./../../../middleware/validator/Storage.js";
-import tokenvalidate from "./../../../middleware/authorization.js";
 
-const uploader = new UploadTo({ dir: "designs", isImage: true, fileSize: 5 });
+
 
 /**
  * @swagger
@@ -36,7 +31,7 @@ const uploader = new UploadTo({ dir: "designs", isImage: true, fileSize: 5 });
  *         description: Successfully retrieved list of designs
  */
 router.get("/:id?", 
-  tokenvalidate,
+
   // checkInput("organization_id"),
   // showParametersErrors,
   MasterController.getMaster
@@ -111,7 +106,7 @@ router.get("/:id?",
  */
 
 router.post("/",
-  tokenvalidate,
+
   checkInput("create_master"),
   showParametersErrors,
  MasterController.createMaster);
@@ -147,7 +142,7 @@ router.post("/",
 
 
 router.put("/:id",
-  tokenvalidate,
+
   checkInput("create_master"),
   showParametersErrors,
   MasterController.updateByIdMaster);
@@ -182,7 +177,7 @@ router.put("/:id",
  */
 
 router.delete("/:id",
-  tokenvalidate,
+
   // checkInput("create_master"),
   // showParametersErrors,
   MasterController.deleteByIdMaster);

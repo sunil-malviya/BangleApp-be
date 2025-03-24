@@ -35,7 +35,7 @@ const uploader = new UploadTo({ dir: "designs", isImage: true, fileSize: 5 });
  *       200:
  *         description: Successfully retrieved list of designs
  */
-router.get("/",  tokenvalidate,DesignController.getAllDesigns);
+router.get("/", DesignController.getAllDesigns);
 /**
  * @swagger
  * /manufacturer/design:
@@ -97,7 +97,7 @@ router.post(
   uploader.array("images", 4),
   checkInput("add_design"),
   showParametersErrors,
-  tokenvalidate,
+
   DesignController.createDesign
 );
 
@@ -191,7 +191,7 @@ router.get("/:id", DesignController.getDesignById);
  */
 
 router.put("/:id",
-  tokenvalidate,
+
   uploader.array("images", 4),
 checkInput("add_design"),
 showParametersErrors,
