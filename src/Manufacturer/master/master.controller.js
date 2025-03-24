@@ -3,6 +3,7 @@ import MasterService from "./master.service.js";
 
 class MasterController {
   static async createMaster(req, res) {
+    console.log("body data=",req.body)
     try {
       const body = req.getBody([
         "fullName",
@@ -41,17 +42,16 @@ class MasterController {
   static async getMaster(req, res) {
     try {
 
-      const organizationId = req.user.organization.id;
-      const masterId = req.params.id
-      const masterType = req.query.masterType
-      const search = req.query.search
+      const organizationId = req.user.organization.id || null;
+      const masterId = req.params.id || null
+      const masterType = req.query.masterType || null
+      const search = req.query.search || null
       let condition = { organizationId };
-
       if (masterId) {
           condition.id = masterId;
       }
       if (masterType) {
-          condition.workerType = masterType.toUpperCase(); // Ensuring consistency
+          condition.workerType = masterType
       }
       if (search) {
           condition.fullName = { contains: search, mode: "insensitive" }; // Case-insensitive search
@@ -76,30 +76,6 @@ class MasterController {
       res.someThingWentWrong(error);
     }
   }
-
-  // static async getByIdMaster(req, res) {
-  //   try {
-  //     const organizationId = req.user.organization.id;
-  //     const masterId = String(req.params.id)
-
-  //     const master = await MasterService.fetchByIdMaster(organizationId, masterId);
-  //     if (!master || master.length === 0) {
-  //       return res.status(404).json({
-  //         status: false,
-  //         message: "master not found please create master!",
-  //       });
-  //     }
-
-  //     return res.status(200).json({
-  //       status: true,
-  //       data: master,
-  //       message: "Get master successfully!",
-  //     });
-  //   } catch (error) {
-  //     console.log(error);
-  //     res.someThingWentWrong(error);
-  //   }
-  // }
 
   static async updateByIdMaster(req, res) {
     try {
