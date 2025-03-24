@@ -122,5 +122,5 @@ class MasterController {
     }
   }
 }
-
+  
 export default MasterController;
