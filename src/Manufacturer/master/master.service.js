@@ -4,7 +4,7 @@ class designservice {
 
 
   static async isExist(data) {
-    return await Prisma.worker.findMany({
+    return await Prisma.worker.findUnique({
       where: {
         organizationId: data.organizationId,
         mobile: data.mobile
@@ -15,11 +15,14 @@ class designservice {
   static async createMaster(data) {
     return await Prisma.worker.create({ data });
   }
-
   static async fetchMaster(condition) {
-    return await Prisma.worker.findMany({where: condition });
+    return await Prisma.worker.findMany({
+      where: condition,
+      orderBy: {
+        fullName: "asc",
+      },
+    });
   }
-
   static async fetchByIdMaster(organizationId, masterId) {
     return await Prisma.worker.findMany({
       where: {

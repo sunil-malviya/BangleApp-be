@@ -3,7 +3,7 @@ import MasterService from "./master.service.js";
 
 class MasterController {
   static async createMaster(req, res) {
-    console.log("body data=",req.body)
+    console.log("body data=", req.body)
     try {
       const body = req.getBody([
         "fullName",
@@ -16,12 +16,12 @@ class MasterController {
 
       body.organizationId = req.user.organization.id;
 
-      const isExistMaster = await MasterService.isExist(body)
+      const isExistMaster = await MasterService.isExist(body);
 
-      if (isExistMaster.length > 0) {
+      if (isExistMaster) {
         return res.status(400).json({
           status: false,
-          message: "Mobile number already exists!",
+          message: `Mobile number ${body.mobile} already exists!`,
         });
       }
 
@@ -48,29 +48,23 @@ class MasterController {
       const search = req.query.search || null
       let condition = { organizationId };
       if (masterId) {
-          condition.id = masterId;
+        condition.id = masterId;
       }
       if (masterType) {
-          condition.workerType = masterType
+        condition.workerType = masterType
       }
       if (search) {
-          condition.fullName = { contains: search, mode: "insensitive" }; // Case-insensitive search
+        condition.fullName = { contains: search, mode: "insensitive" }; // Case-insensitive search
       }
 
 
       const master = await MasterService.fetchMaster(condition);
-      if (master.length === 0) {
-        return res.status(404).json({
-          status: false,
-          message: "master not found please create master!",
-        });
-      }
-
       return res.status(200).json({
         status: true,
         data: master,
-        message: "Get all master successfully!",
+        message: master.length > 0 ? "Get all master successfully!" : "No master found!",
       });
+
     } catch (error) {
       console.log(error);
       res.someThingWentWrong(error);
@@ -110,7 +104,7 @@ class MasterController {
       const organizationId = req.user.organization.id;
       const masterId = String(req.params.id)
 
-      const isExistMaster = await MasterService.isExistId(organizationId,masterId)
+      const isExistMaster = await MasterService.isExistId(organizationId, masterId)
 
       if (isExistMaster.length === 0) {
         return res.status(400).json({
