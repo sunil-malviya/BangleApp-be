@@ -6,7 +6,7 @@ class designservice {
     return await Prisma.design.create({ data });
   }
 
-  static async getAllDesigns({ page = 1, pageSize = 100, orderBy = "name", order = "desc", filters = {} }) {
+  static async getAllDesigns({ page = 1, pageSize = 8, orderBy = "name", order = "desc", filters = {} }) {
     return await Prisma.design.findMany({
       where: filters, // Apply conditions
       skip: (page - 1) * pageSize, // Pagination logic

@@ -44,9 +44,9 @@ class DesignController {
   static async getAllDesigns(req, res) {
     try {
       const organization_id = req.user.organization.id;
-      const page = req.query.page || 1;
+      const page = req?.query?.page  ? req?.query?.page: 1;
       const filter = req.query.filter || null;
-      
+
       let cond = { organizationId: organization_id };
   
       if (filter) {
@@ -70,7 +70,7 @@ class DesignController {
         }
       }
   
-      console.log(cond);
+     
   
       const designs = await DesignService.getAllDesigns({
         page,
@@ -91,13 +91,12 @@ class DesignController {
         });
       }
   
-      res.success(designs);
+      res.status(200).json({status:true,message:"success",data:designs,page:page});
     } catch (error) {
       console.log(error);
       res.someThingWentWrong(error);
     }
   }
-  
 
   static async getDesignById(req, res) {
     try {
