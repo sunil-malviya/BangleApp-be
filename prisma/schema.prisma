@@ -50,6 +50,7 @@ model Organization {
   userId String @unique
   user   User   @relation(fields: [userId], references: [id])
   designs Design[] 
+  pipeMakerJobs PipeMakerJob[]
  
 }
 
@@ -94,6 +95,7 @@ model Worker {
   status         Int           @default(1)
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
+  PipeMakerJobs  PipeMakerJob[] 
 }
 
 enum workerType {
@@ -110,18 +112,24 @@ enum worktype {
 
 model PipeMakerJob {
   id              String      @id @default(uuid())
+
+  organization    Organization @relation(fields: [organizationId], references: [id])
   organizationId  String
   workerStatus    worktype
 
-  workerOnlineId  String?  // Add space before `?`
-  workerOfflineId String?  // Add space before `?`
+  workerOnlineId  String? 
+
+  workerOfflineId String?  
+  workerOffline   Worker? @relation(fields: [workerOfflineId], references: [id])
+
   createdDate      DateTime
   completionDate  DateTime?
   totalPipeQty    Int
   totalitem       Int
   pipeItems       PipeItem[]
   materialDetails Json
-  status          Int
+  status          Int   //  -  1 pending  2 completed
+  isdeleted       Int   @default(0) /// 1 = deleted and 0 not 
 }
 
 model PipeItem {
@@ -135,6 +143,7 @@ model PipeItem {
   colorQuantities Json   
   total_qty       Int
   total_item      Int
+  isdeleted       Int   @default(0) /// 1 = deleted and 0 not 
 }
 
 model Nagina {
