@@ -1,10 +1,10 @@
 import Prisma from './../../../db/prisma.js';
 
-class designservice {
+class NaginaMasterService {
 
 
   static async isExist(data) {
-    return await Prisma.worker.findMany({
+    return await Prisma.worker.findUnique({
       where: {
         organizationId: data.organizationId,
         mobile: data.mobile
@@ -12,17 +12,19 @@ class designservice {
     });
   }
 
-  static async createMaster(data) {
-    return await Prisma.worker.create({ data });
+  static async createNaginaMaster(data) {
+    console.log("data=",data)
+    return await Prisma.nagina.create({ data });
   }
-
   static async fetchMaster(condition) {
-
-    return await Prisma.worker.findMany({where: condition,  orderBy: {
-      ["fullName"]: "asc", 
-    }, });
+    return await Prisma.worker.findMany({
+      where: condition,
+      orderBy: {
+        fullName: "asc",
+      },
+    });
   }
-
+  
   static async fetchByIdMaster(organizationId, masterId) {
     return await Prisma.worker.findMany({
       where: {
@@ -63,4 +65,4 @@ class designservice {
 
 }
 
-export default designservice;
+export default NaginaMasterService;

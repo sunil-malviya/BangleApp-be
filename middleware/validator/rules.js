@@ -143,7 +143,7 @@ const validationRules = {
   sizeFrom: body("sizeFrom").exists().withMessage("field is required"),
 
   sizeTo: body("sizeTo").exists().withMessage("field is required"),
-
+  size: body("size").exists().withMessage("field is required"),
   colors: body("colors")
     .optional()
     .custom((value, { req }) => {

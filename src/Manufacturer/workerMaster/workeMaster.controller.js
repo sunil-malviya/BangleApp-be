@@ -1,4 +1,4 @@
-import MasterService from "./master.service.js";
+import MasterService from "./workerMaster.service.js";
 
 class MasterController {
   static async createMaster(req, res) {
@@ -15,14 +15,14 @@ class MasterController {
 
       body.organizationId = req.user.organization.id;
 
-      const isExistMaster = await MasterService.isExist(body);
+      // const isExistMaster = await MasterService.isExist(body);
 
-      if (isExistMaster.length > 0) {
-        return res.status(400).json({
-          status: false,
-          message: "Mobile number already exists!",
-        });
-      }
+      // if (isExistMaster) {
+      //   return res.status(400).json({
+      //     status: false,
+      //     message: `Mobile number ${body.mobile} already exists!`,
+      //   });
+      // }
 
       const master = await MasterService.createMaster(body);
 
@@ -57,7 +57,6 @@ class MasterController {
 
       const master = await MasterService.fetchMaster(condition);
 
-      console.log(master)
       // if (master.length === 0) {
       //   return res.status(404).json({
       //     status: false,
@@ -68,8 +67,9 @@ class MasterController {
       return res.status(200).json({
         status: true,
         data: master,
-        message: "Get all master successfully!",
+        message: master.length > 0 ? "Get all master successfully!" : "No master found!",
       });
+
     } catch (error) {
       console.log(error);
       res.someThingWentWrong(error);
@@ -107,10 +107,7 @@ class MasterController {
       const organizationId = req.user.organization.id;
       const masterId = String(req.params.id);
 
-      const isExistMaster = await MasterService.isExistId(
-        organizationId,
-        masterId
-      );
+      const isExistMaster = await MasterService.isExistId(organizationId, masterId)
 
       if (isExistMaster.length === 0) {
         return res.status(400).json({
@@ -134,5 +131,5 @@ class MasterController {
     }
   }
 }
-
+  
 export default MasterController;
