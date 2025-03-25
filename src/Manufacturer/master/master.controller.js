@@ -40,9 +40,10 @@ class MasterController {
   static async getMaster(req, res) {
     try {
       const organizationId = req.user.organization.id || null;
-      const masterId = req.params.id || null;
-      const masterType = req.query.masterType || null;
-      const search = req.query.search || null;
+      const masterId = req.params?.id || null;
+      const masterType = req.query?.masterType || null;
+      const search = req.query.search && req.query.search !== "undefined" ? req.query.search : false;
+
       let condition = { organizationId };
       if (masterId) {
         condition.id = masterId;
@@ -55,12 +56,14 @@ class MasterController {
       }
 
       const master = await MasterService.fetchMaster(condition);
-      if (master.length === 0) {
-        return res.status(404).json({
-          status: false,
-          message: "master not found please create master!",
-        });
-      }
+
+      console.log(master)
+      // if (master.length === 0) {
+      //   return res.status(404).json({
+      //     status: false,
+      //     message: "master not found please create master!",
+      //   });
+      // }
 
       return res.status(200).json({
         status: true,

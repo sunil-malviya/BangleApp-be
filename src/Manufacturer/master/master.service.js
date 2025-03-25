@@ -17,7 +17,10 @@ class designservice {
   }
 
   static async fetchMaster(condition) {
-    return await Prisma.worker.findMany({where: condition });
+
+    return await Prisma.worker.findMany({where: condition,  orderBy: {
+      ["fullName"]: "asc", 
+    }, });
   }
 
   static async fetchByIdMaster(organizationId, masterId) {

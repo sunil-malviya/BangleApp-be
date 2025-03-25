@@ -1,11 +1,10 @@
 import { validationResult, body, check } from "express-validator";
 
 import * as validationRules from "./rules.js"; // Import all as an object
-// import * as asyncValidation from "./asyncValidate.js";
+import {checkMasterExists} from "./asyncValidate.js";
 
 
 
-// import languageModule from "../../helpers/languages/index.js"; // Import language module
 
 const {
   baseMobile,
@@ -19,47 +18,17 @@ const {
   otp,
   gender,
   dateofbirth,
-  pincode,
-  role_id,
-  Admin_id,
-  page_id,
-  country_code,
-  country_id,
-  state_id,
-  city_id,
-  area_id,
-  locality_id,
-  totalclient,
-  id,
-  ID,
-  slug,
-  password,
-  token,
-  new_password,
+
   fullName,
   name,
-  status,
-  cms_contant,
-  verification_img,
+
   images,
-  type,
-  title,
-  message,
-  users,
-  meta_description,
-  meta_keyword,
-  meta_title,
-  total_employee,
-  country,
-  state,
-  city,
-  is_sundayholiday,
+  
   address,
-  start_date,
-  end_date,
+
+
   organization_id,
-  subscription_id,
-  mode_of_pay,
+
   joined_date,
   jobTitle,
   payscale,
@@ -108,8 +77,6 @@ const checkInput = (method) => {
     case "organization_id":
       return [organization_id];
       
-    case "create_master":
-      return [fullName, mobile, shopName, workerType,];
 
     case "fileUploads":
       return [images];
@@ -134,7 +101,10 @@ const asyncValidate = (method) => {
         BankAccount,
         ID_Proof_Type,
       ];
-
+      case "create_master":
+        return [fullName, mobile.custom(checkMasterExists)
+          .withMessage("Mobile no already in use."),shopName, workerType,];
+  
 
 
     default:
