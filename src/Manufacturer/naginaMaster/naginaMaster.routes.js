@@ -1,7 +1,7 @@
 "use strict";
 import express from "express";
 const router = express.Router();
-import MasterController from "./master.controller.js";
+import NaginaMasterController from "./naginaMaster.controller.js";
 import {
   checkInput,
   asyncValidate,
@@ -15,7 +15,7 @@ router.get("/:id?",
 
   // checkInput("organization_id"),
   // showParametersErrors,
-  MasterController.getMaster
+  NaginaMasterController.getMaster
 )
 
 
@@ -23,22 +23,22 @@ router.get("/:id?",
 
 router.post("/",
 
-  asyncValidate("create_master"),
-  showParametersErrors,
- MasterController.createMaster);
+  // asyncValidate("nagina_master"),
+  // showParametersErrors,
+ NaginaMasterController.createNaginaMaster);
 
 
 router.put("/:id",
 
   checkInput("create_master"),
   showParametersErrors,
-  MasterController.updateByIdMaster);
+  NaginaMasterController.updateByIdMaster);
 
 router.delete("/:id",
 
   // checkInput("create_master"),
   // showParametersErrors,
-  MasterController.deleteByIdMaster);
+  NaginaMasterController.deleteByIdMaster);
 
 
 export default router;

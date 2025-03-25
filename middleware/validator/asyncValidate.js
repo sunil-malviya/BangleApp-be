@@ -62,3 +62,7 @@ const processData3 = async (Model, id, value) => {
 export const checkMasterExists = async (value, { req }) => {
   await processData3(Prisma.worker, req.user.organization.id, value);
 };
+
+export const checkNaginaMasterExists = async (value, { req }) => {
+  await processData3(Prisma.nagina, req.user.organization.id, value);
+};

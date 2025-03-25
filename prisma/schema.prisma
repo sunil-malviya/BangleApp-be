@@ -137,3 +137,13 @@ model PipeItem {
   total_item      Int
 }
 
+model Nagina {
+  id             String        @id @default(uuid())
+  naginaName     String
+  naginaSize     String        @unique
+  image          String?
+  organizationId String
+  isdeleted      Int           @default(0) /// 1 = deleted and 0 not  
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}

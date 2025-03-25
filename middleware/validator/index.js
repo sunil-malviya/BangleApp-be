@@ -1,7 +1,7 @@
 import { validationResult, body, check } from "express-validator";
 
 import * as validationRules from "./rules.js"; // Import all as an object
-import {checkMasterExists} from "./asyncValidate.js";
+import {checkMasterExists,checkNaginaMasterExists} from "./asyncValidate.js";
 
 
 
@@ -42,7 +42,8 @@ const {
   sizeTo,
   sizeFrom,
   shopName,
-  workerType
+  workerType,
+  size
 
 } = validationRules.default;
 
@@ -92,7 +93,11 @@ const asyncValidate = (method) => {
         return [fullName, mobile.custom(checkMasterExists)
           .withMessage("Mobile no already in use."),shopName, workerType,];
   
-
+      case "nagina_master":
+        return [name, size.custom(checkNaginaMasterExists)
+          .withMessage("Size already in use.")];
+      
+    
 
     default:
       return [];

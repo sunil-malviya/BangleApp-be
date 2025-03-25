@@ -1,6 +1,6 @@
 import Prisma from './../../../db/prisma.js';
 
-class designservice {
+class NaginaMasterService {
 
 
   static async isExist(data) {
@@ -12,8 +12,9 @@ class designservice {
     });
   }
 
-  static async createMaster(data) {
-    return await Prisma.worker.create({ data });
+  static async createNaginaMaster(data) {
+    console.log("data=",data)
+    return await Prisma.nagina.create({ data });
   }
   static async fetchMaster(condition) {
     return await Prisma.worker.findMany({
@@ -64,4 +65,4 @@ class designservice {
 
 }
 
-export default designservice;
+export default NaginaMasterService;

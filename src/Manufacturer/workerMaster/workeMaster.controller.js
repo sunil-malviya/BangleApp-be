@@ -1,4 +1,4 @@
-import MasterService from "./master.service.js";
+import MasterService from "./workerMaster.service.js";
 
 class MasterController {
   static async createMaster(req, res) {
