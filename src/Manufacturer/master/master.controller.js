@@ -15,14 +15,14 @@ class MasterController {
 
       body.organizationId = req.user.organization.id;
 
-      const isExistMaster = await MasterService.isExist(body);
+      // const isExistMaster = await MasterService.isExist(body);
 
-      if (isExistMaster) {
-        return res.status(400).json({
-          status: false,
-          message: `Mobile number ${body.mobile} already exists!`,
-        });
-      }
+      // if (isExistMaster) {
+      //   return res.status(400).json({
+      //     status: false,
+      //     message: `Mobile number ${body.mobile} already exists!`,
+      //   });
+      // }
 
       const master = await MasterService.createMaster(body);
 
@@ -40,9 +40,10 @@ class MasterController {
   static async getMaster(req, res) {
     try {
       const organizationId = req.user.organization.id || null;
-      const masterId = req.params.id || null;
-      const masterType = req.query.masterType || null;
-      const search = req.query.search || null;
+      const masterId = req.params?.id || null;
+      const masterType = req.query?.masterType || null;
+      const search = req.query.search && req.query.search !== "undefined" ? req.query.search : false;
+
       let condition = { organizationId };
       if (masterId) {
         condition.id = masterId;
@@ -55,6 +56,14 @@ class MasterController {
       }
 
       const master = await MasterService.fetchMaster(condition);
+
+      // if (master.length === 0) {
+      //   return res.status(404).json({
+      //     status: false,
+      //     message: "master not found please create master!",
+      //   });
+      // }
+
       return res.status(200).json({
         status: true,
         data: master,

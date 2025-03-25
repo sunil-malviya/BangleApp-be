@@ -23,6 +23,7 @@ class designservice {
       },
     });
   }
+  
   static async fetchByIdMaster(organizationId, masterId) {
     return await Prisma.worker.findMany({
       where: {
