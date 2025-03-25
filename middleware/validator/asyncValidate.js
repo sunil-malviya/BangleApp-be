@@ -1,7 +1,7 @@
 
 import Prisma from "./../../db/prisma.js"
 
-const processData3 = async (Model, id, value) => {
+const processData3 = async (Model, id,fieldName, value) => {
   try {
 
     console.log(value,'value')
@@ -14,7 +14,7 @@ const processData3 = async (Model, id, value) => {
     exist = await  Model.findUnique({
       where: {
         organizationId: id,
-        mobile: value
+        [fieldName]: value
       }
     });
 
@@ -31,9 +31,9 @@ const processData3 = async (Model, id, value) => {
 
 
 export const checkMasterExists = async (value, { req }) => {
-  await processData3(Prisma.worker, req.user.organization.id, value);
+  await processData3(Prisma.worker, req.user.organization.id, "mobile" ,value );
 };
 
 export const checkNaginaMasterExists = async (value, { req }) => {
-  await processData3(Prisma.nagina, req.user.organization.id, value);
+  await processData3(Prisma.nagina, req.user.organization.id, "naginaSize" ,value );
 };

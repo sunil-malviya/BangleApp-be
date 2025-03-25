@@ -43,7 +43,8 @@ const {
   sizeFrom,
   shopName,
   workerType,
-  size
+  naginaName,
+  naginaSize
 
 } = validationRules.default;
 
@@ -89,12 +90,12 @@ const checkInput = (method) => {
 
 const asyncValidate = (method) => {
   switch (method) {
-      case "create_master":
+      case "worker_master":
         return [fullName, mobile.custom(checkMasterExists)
           .withMessage("Mobile no already in use."),shopName, workerType,];
   
       case "nagina_master":
-        return [name, size.custom(checkNaginaMasterExists)
+        return [naginaName, naginaSize.custom(checkNaginaMasterExists)
           .withMessage("Size already in use.")];
       
     
