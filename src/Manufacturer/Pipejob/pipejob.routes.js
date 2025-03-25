@@ -24,4 +24,16 @@ router.post(
 
 
 
+router.get(
+  "/",
+
+//   checkInput("add_design"),
+//   showParametersErrors,
+
+  Pipecontroller.getPipejobs
+);
+
+
+
+
 export default router;

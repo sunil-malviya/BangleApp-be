@@ -35,7 +35,24 @@ const custommethod = (req, res, next) => {
             message: 'SUCCESS',
             data,
         });
+
+
+
     };
+
+    res.infintescroll = function (data = [],page=1) {
+        return res.status(200).json({
+            status: true,
+            message: 'SUCCESS',
+            data,
+            page
+        });
+
+
+        
+    };
+
+
 
     // Response :: Datatables No records found
     res.datatableNoRecords = function () {
