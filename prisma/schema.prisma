@@ -101,3 +101,38 @@ enum workerType {
   AGENT
   PIPEMAKER
 }
+
+enum worktype {
+  Online
+  Offline
+  
+}
+
+model PipeMakerJob {
+  id              String      @id @default(uuid())
+  organizationId  String
+  workerStatus    worktype
+
+  workerOnlineId  String?  // Add space before `?`
+  workerOfflineId String?  // Add space before `?`
+  createDate      DateTime
+  completionDate  DateTime?
+  totalPipeQty    Int
+  pipeItems       PipeItem[]
+  materialDetails Json
+  status          Int
+}
+
+model PipeItem {
+  id              String       @id @default(uuid())
+  jobId           String
+  job             PipeMakerJob @relation(fields: [jobId], references: [id])
+  size            String
+  weight          String
+  rate            Float
+  rateType        String
+  colorQuantities Json   
+  total_qty       Int
+  total_item      Int
+}
+
