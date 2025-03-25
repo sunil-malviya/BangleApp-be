@@ -4,7 +4,7 @@ const router = express.Router();
 import MasterController from "./master.controller.js";
 import {
   checkInput,
-
+  asyncValidate,
   showParametersErrors,
 } from "./../../../middleware/validator/index.js";
 
@@ -23,7 +23,7 @@ router.get("/:id?",
 
 router.post("/",
 
-  checkInput("create_master"),
+  asyncValidate("create_master"),
   showParametersErrors,
  MasterController.createMaster);
 
