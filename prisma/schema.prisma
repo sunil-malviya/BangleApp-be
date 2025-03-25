@@ -115,9 +115,10 @@ model PipeMakerJob {
 
   workerOnlineId  String?  // Add space before `?`
   workerOfflineId String?  // Add space before `?`
-  createDate      DateTime
+  createdDate      DateTime
   completionDate  DateTime?
   totalPipeQty    Int
+  totalitem       Int
   pipeItems       PipeItem[]
   materialDetails Json
   status          Int
