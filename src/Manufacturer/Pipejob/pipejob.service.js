@@ -62,9 +62,9 @@ class Pipejobmakerservice {
     });
   }
 
-  static async getAllPipejob( filters = {}, page = 1,pageSize=5 ) {
-    console.log(filters)
-   
+  static async getAllPipejob(filters = {}, page = 1, pageSize = 5) {
+    console.log(filters);
+
     return await Prisma.pipeMakerJob.findMany({
       where: filters,
       skip: (page - 1) * pageSize,
@@ -81,7 +81,15 @@ class Pipejobmakerservice {
   }
 
   static async getPipejobById(id) {
-    return await Prisma.design.findUnique({ where: { id } });
+    return await Prisma.pipeMakerJob.findUnique({
+      where: { id },
+
+      include: {
+        organization: true,
+        workerOffline: true,
+        pipeItems: true,
+      },
+    });
   }
 
   static async updatePipejob(id, data) {
