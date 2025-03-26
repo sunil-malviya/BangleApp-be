@@ -148,7 +148,7 @@ model PipeItem {
 
 model Nagina {
   id             String        @id @default(uuid())
-  naginaName     String
+  naginaName     String        @unique
   naginaSize     String        @unique
   image          String?
   organizationId String

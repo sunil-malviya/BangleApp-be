@@ -1,7 +1,7 @@
 import { validationResult, body, check } from "express-validator";
 
 import * as validationRules from "./rules.js"; // Import all as an object
-import {checkMasterExists,checkNaginaMasterExists} from "./asyncValidate.js";
+import { checkMasterExists, checkNaginaMasterExists1, checkNaginaMasterExists2 } from "./asyncValidate.js";
 
 
 
@@ -23,7 +23,7 @@ const {
   name,
 
   images,
-  
+
   address,
 
 
@@ -78,7 +78,7 @@ const checkInput = (method) => {
 
     case "organization_id":
       return [organization_id];
-      
+
 
     case "fileUploads":
       return [images];
@@ -90,15 +90,16 @@ const checkInput = (method) => {
 
 const asyncValidate = (method) => {
   switch (method) {
-      case "worker_master":
-        return [fullName, mobile.custom(checkMasterExists)
-          .withMessage("Mobile no already in use."),shopName, workerType,];
-  
-      case "nagina_master":
-        return [naginaName, naginaSize.custom(checkNaginaMasterExists)
+    case "worker_master":
+      return [fullName, mobile.custom(checkMasterExists)
+        .withMessage("Mobile no already in use."), shopName, workerType,];
+
+    case "nagina_master":
+      return [naginaName.custom(checkNaginaMasterExists1)
+        .withMessage("Name already in use."), naginaSize.custom(checkNaginaMasterExists2)
           .withMessage("Size already in use.")];
-      
-    
+
+
 
     default:
       return [];
