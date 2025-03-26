@@ -27,39 +27,32 @@ class PipejobController {
   static async getPipejobs(req, res) {
     try {
       const organization_id = req.user.organization.id;
-      const page = req?.query?.pageNo  ? req?.query?.pageNo: 1;
-      const filter = req.query.filter || null;
-console.log(req.query)
-      let cond = { organizationId: organization_id,isdeleted:0,...filter };
+      const page = req?.query?.pageNo ? req?.query?.pageNo : 1;
+      let filter = req.query.filter || null;
+      filter = JSON.parse(filter);
+      console.log(filter);
+      let cond = { organizationId: organization_id, isdeleted: 0, ...filter };
 
-      const records = await PipejobService.getAllPipejob(cond,page)
+      const records = await PipejobService.getAllPipejob(cond, page);
 
-    
-
-      setTimeout(() => {
-        res.infintescroll(records, page);
-      }, 2000);
-      
+      res.infintescroll(records, page);
     } catch (error) {
-      console.log(error)
+      console.log(error);
       res.status(500).json({ error: error.message });
     }
   }
 
+  static async getPipejobbyId(req, res) {
+    try {
 
+      const records = await PipejobService.getPipejobById(req.params.id);
 
-
-
-
-
-
-
-
-
-
-
-
-
+      res.success(records);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ error: error.message });
+    }
+  }
 }
 
 export default PipejobController;

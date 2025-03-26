@@ -33,6 +33,15 @@ router.get(
   Pipecontroller.getPipejobs
 );
 
+router.get(
+  "/:id",
+
+//   checkInput("add_design"),
+//   showParametersErrors,
+
+  Pipecontroller.getPipejobbyId
+);
+
 
 
 
