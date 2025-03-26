@@ -6,39 +6,60 @@ import {
   checkInput,
   asyncValidate,
   showParametersErrors,
-} from "./../../../middleware/validator/index.js";
+} from "../../../middleware/validator/index.js";
 
 
+// --------------------------worker route---------------------------------------------
 
- 
-router.get("/:id?", 
-
+router.get("/worker/:id?",
   // checkInput("organization_id"),
   // showParametersErrors,
-  MasterController.getMaster
+  MasterController.getWorkerMaster
 )
 
-
-
-
-router.post("/",
-
-  asyncValidate("create_master"),
+router.post("/worker/",
+  asyncValidate("worker_master"),
   showParametersErrors,
- MasterController.createMaster);
+  MasterController.createWorkerMaster
+);
 
-
-router.put("/:id",
-
-  checkInput("create_master"),
+router.put("/worker/:id",
+  checkInput("worker_master"),
   showParametersErrors,
-  MasterController.updateByIdMaster);
+  MasterController.updateByIdWorkerMaster
+);
 
-router.delete("/:id",
-
-  // checkInput("create_master"),
+router.delete("/worker/:id",
+  // checkInput("worker_master"),
   // showParametersErrors,
-  MasterController.deleteByIdMaster);
+  MasterController.deleteByIdWorkerMaster
+);
+
+// --------------------------nagina route---------------------------------------------
+
+router.get("/nagina/:id?",
+  // checkInput("organization_id"),
+  // showParametersErrors,
+  MasterController.getNaginaMaster
+)
+
+router.post("/nagina/",
+  asyncValidate("nagina_master"),
+  showParametersErrors,
+  MasterController.createNaginaMaster 
+);
+
+router.put("/nagina/:id",
+  checkInput("nagina_master"),
+  showParametersErrors,
+  MasterController.updateByIdNaginaMaster
+);
+
+router.delete("/nagina/:id",
+  // checkInput("nagina_master"),
+  // showParametersErrors,
+  MasterController.deleteByIdNaginaMaster
+);
 
 
 export default router;

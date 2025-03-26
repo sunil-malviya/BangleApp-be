@@ -143,7 +143,8 @@ const validationRules = {
   sizeFrom: body("sizeFrom").exists().withMessage("field is required"),
 
   sizeTo: body("sizeTo").exists().withMessage("field is required"),
-
+  naginaName: body("naginaName").exists().withMessage("Nagina name is required"),
+  naginaSize: body("naginaSize").exists().withMessage("Nagina size is required"),
   colors: body("colors")
     .optional()
     .custom((value, { req }) => {
