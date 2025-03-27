@@ -22,6 +22,14 @@ router.post(
 );
 
 
+router.put(
+  "/:id",
+
+//   checkInput("add_design"),
+//   showParametersErrors,
+
+  Pipecontroller.UpdatePipejob
+);
 
 
 router.get(

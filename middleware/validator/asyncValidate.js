@@ -1,21 +1,20 @@
+import Prisma from "./../../db/prisma.js";
 
-import Prisma from "./../../db/prisma.js"
-
-const processData3 = async (Model, id,fieldName, value) => {
+const processData3 = async (Model, id, fieldName, value) => {
   try {
+    
+    console.log(value, "value");
+    console.log(id, "id");
 
-    console.log(value,'value')
-
-    console.log(id,'id')
     if (!value) return Promise.resolve();
 
     let exist;
 
-    exist = await  Model.findUnique({
+    exist = await Model.findUnique({
       where: {
         organizationId: id,
-        [fieldName]: value
-      }
+        [fieldName]: value,
+      },
     });
 
     return exist ? Promise.reject() : Promise.resolve();
@@ -23,12 +22,6 @@ const processData3 = async (Model, id,fieldName, value) => {
     return Promise.reject();
   }
 };
-
-
-
-
-
-
 
 export const checkMasterExists = async (value, { req }) => {
   await processData3(Prisma.worker, req.user.organization.id, "mobile" ,value );
