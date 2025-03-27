@@ -24,14 +24,13 @@ const processData3 = async (Model, id, fieldName, value) => {
 };
 
 export const checkMasterExists = async (value, { req }) => {
-  await processData3(Prisma.worker, req.user.organization.id, "mobile", value);
+  await processData3(Prisma.worker, req.user.organization.id, "mobile" ,value );
 };
 
-export const checkNaginaMasterExists = async (value, { req }) => {
-  await processData3(
-    Prisma.nagina,
-    req.user.organization.id,
-    "naginaSize",
-    value
-  );
+export const checkNaginaMasterExists1 = async (value, { req }) => {
+  await processData3(Prisma.nagina, req.user.organization.id, "naginaName" ,value );
+};
+
+export const checkNaginaMasterExists2 = async (value, { req }) => {
+  await processData3(Prisma.nagina, req.user.organization.id, "naginaSize" ,value );
 };
