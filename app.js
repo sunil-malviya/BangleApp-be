@@ -14,6 +14,7 @@ import agentRouter from './src/Agent/index.js';
 import karigarRouter from './src/Karigar/index.js';
 import manufacturerRouter from './src/Manufacturer/index.js';
 import pipeMakerRouter from './src/PipeMaker/index.js';
+import GeneralRoutes from "./src/General/index.js"
 import {responseHandler} from './utils/apiResponse.js'
 import helperRouter from './src/helper/index.js'
 import custommethod from "./middleware/validator/customMethods.js";
@@ -71,6 +72,7 @@ app.use('/agent', agentRouter);
 app.use('/karigar', karigarRouter);
 app.use('/manufacturer', manufacturerRouter);
 app.use('/pipeMaker', pipeMakerRouter);
+app.use('/general', GeneralRoutes);
 app.use('/api/helper',helperRouter)
 
 

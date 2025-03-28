@@ -14,7 +14,6 @@ class PipejobController {
       ]);
 
       const data = await PipejobService.Arrangedata(body, organization_id);
-      
 
       const result = await PipejobService.createPipejob(data);
 
@@ -28,11 +27,58 @@ class PipejobController {
   static async getPipejobs(req, res) {
     try {
       const organization_id = req.user.organization.id;
-      const page = req?.query?.pageNo ? req?.query?.pageNo : 1;
-      let filter = req.query.filter || null;
-      filter = JSON.parse(filter);
+      const page = req.query.pageNo ? parseInt(req.query.pageNo, 10) : 1;
+      let filter = req.query.filter ? JSON.parse(req.query.filter) : {};
 
-      let cond = { organizationId: organization_id, isdeleted: 0, ...filter };
+      let cond = {
+        organizationId: organization_id,
+        isdeleted: 0,
+        status: filter.status,
+      };
+
+      if (filter.dateRange && filter.dateRange.from && filter.dateRange.to) {
+        cond.createdDate = {
+          gte: new Date(filter.dateRange.from),
+          lte: new Date(filter.dateRange.to),
+        };
+      }
+
+      if (
+        filter.sizes?.length ||
+        filter.weights?.length ||
+        filter.colors?.length
+      ) {
+        let pipeItemsFilter = {};
+
+        if (filter.sizes?.length) {
+          pipeItemsFilter.size = { in: filter.sizes };
+        }
+
+        if (filter.weights?.length) {
+          pipeItemsFilter.weight = { in: filter.weights };
+        }
+
+        if (filter.colors && filter.colors.length) {
+          let colorConditions = filter.colors.map((colorName) => ({
+            colorQuantities: {
+              array_contains: [{ color: { name: colorName } }],
+            },
+          }));
+
+          pipeItemsFilter.OR = colorConditions;
+        }
+
+        cond.pipeItems = { some: pipeItemsFilter };
+      }
+
+      if (filter.search && filter.search.trim() !== "") {
+        cond.workerOffline = {
+          fullName: {
+            contains: filter.search,
+            mode: "insensitive",
+          },
+        };
+      }
 
       const records = await PipejobService.getAllPipejob(cond, page);
 
@@ -57,7 +103,7 @@ class PipejobController {
   static async UpdatePipejob(req, res) {
     try {
       const organization_id = req.user.organization.id;
-      const id = req.params.id
+      const id = req.params.id;
 
       const body = req.getBody([
         "pipeMakerId",
@@ -68,11 +114,9 @@ class PipejobController {
         "isOnlineWorker",
       ]);
 
-     
       const data = await PipejobService.Arrangedata(body, organization_id);
 
-
-      const result = await PipejobService.updatePipejob(id,data);
+      const result = await PipejobService.updatePipejob(id, data);
 
       res.success(result);
     } catch (error) {
@@ -80,6 +124,41 @@ class PipejobController {
       res.someThingWentWrong(error);
     }
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+  static async Deletepipejobs(req, res) {
+    try {
+      const ids  = req.query?.ids;
+     const idarry =  JSON.parse(ids)
+
+ 
+   const result  =  await  PipejobService.deletePipejob(idarry)
+               
+      res.success(result);
+    } catch (error) {
+      console.log(error);
+      res.someThingWentWrong(error);
+    }
+  }
+
+
+
+
+
+
+
+
 }
 
 export default PipejobController;
