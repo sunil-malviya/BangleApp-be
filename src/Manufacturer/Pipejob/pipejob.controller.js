@@ -125,26 +125,13 @@ class PipejobController {
     }
   }
 
-
-
-
-
-
-
-
-
-
-
-
-
   static async Deletepipejobs(req, res) {
     try {
-      const ids  = req.query?.ids;
-     const idarry =  JSON.parse(ids)
+      const ids = req.query?.ids;
+      const idarry = JSON.parse(ids);
 
- 
-   const result  =  await  PipejobService.deletePipejob(idarry)
-               
+      const result = await PipejobService.deletePipejob(idarry);
+
       res.success(result);
     } catch (error) {
       console.log(error);
@@ -152,13 +139,30 @@ class PipejobController {
     }
   }
 
+  static async Recievedpipeitems(req, res) {
+    try {
+      const name = req.user.fullName;
+      const organization_id = req.user.organization.id;
+      const body = req.getBody(["id", "weight", "item", "quantity"]);
+      const newLog = {
+        timestamp: new Date().toISOString(),
+        receivedBy: name,
+        receivedQuantity: body.quantity,
+      };
 
-
-
-
-
-
-
+      const result = await PipejobService.RecievedPipeMark(body.id, {
+        quantity: body.quantity,
+        weight: body.weight,
+        color: body.item.color.name,
+        newLog,
+        organization_id:organization_id
+      });
+      res.success(result);
+    } catch (error) {
+      console.log(error);
+      res.someThingWentWrong(error);
+    }
+  }
 }
 
 export default PipejobController;

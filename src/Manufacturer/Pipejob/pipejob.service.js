@@ -122,6 +122,114 @@ class Pipejobmakerservice {
       data: { isdeleted: 1 },
     });
   }
+
+  //----------------------- recieved item  enties --------------------------------------------------///
+
+  static async RecievedPipeMark(id, data) {
+    return await Prisma.$transaction(async (tx) => {
+      const result = await tx.pipeItem.findUnique({
+        where: { id },
+      });
+
+      if (!result) return null;
+
+      const allpipeitem = await tx.pipeItem.findMany({
+        where: { jobId: result.jobId },
+        select: {
+          colorQuantities: true, 
+        },
+      });
+
+      const totalrecieved = await this.totalRecievedPipe(allpipeitem)+ data.quantity;
+
+
+      //---------------- build fresh object with add current recieved qty  ------///
+      const updatedData = await this.Findandupdateitem(
+        result,
+        data.color,
+        data.quantity,
+        data.newLog
+      );
+
+      if (!updatedData) return null;
+
+      const record = await tx.PipeStock.upsert({
+        where: {
+          organizationId_size_weight_color: {
+            organizationId: data.organization_id,
+            size: result.size,
+            weight: result.weight,
+            color: data.color,
+          },
+        },
+        update: {
+          stock: { increment: data.quantity },
+        },
+        create: {
+          size: result.size,
+          weight: result.weight,
+          color: data.color,
+          stock: data.quantity,
+          organization: { connect: { id: data.organization_id } },
+        },
+      });
+
+      //--------------------------------------------------------------------------------------------////
+
+      await tx.pipeItem.update({
+        where: { id },
+        data: updatedData,
+      });
+
+      await tx.pipeMakerJob.updateMany({
+        where: {
+          id:result.jobId,
+          totalPipeQty: totalrecieved ,
+        },
+        data: {
+          status: 2,
+        },
+      });
+
+      return record;
+    });
+  }
+
+  //--------------------   ---------------------------------------------------------/////
+
+  static async Findandupdateitem(
+    data,
+    colorName,
+    receivedQty,
+    deliveryLogEntry
+  ) {
+    const colorObj = data.colorQuantities.find(
+      (item) => item.color.name.toLowerCase() === colorName.toLowerCase()
+    );
+
+    if (!colorObj) {
+      console.log(`Color '${colorName}' not found.`);
+      return null;
+    }
+
+    colorObj.totalrecieved += receivedQty;
+
+    colorObj.deliverylog.push(deliveryLogEntry);
+
+    return data;
+  }
+
+  //------------------  calcualte size wise total recieved pipe ------------------------------//
+
+  static calculateSizewise = (item) => {
+    return item.colorQuantities.reduce((sum, cq) => sum + cq.totalrecieved, 0);
+  };
+
+  static async totalRecievedPipe(pipeItems) {
+    return pipeItems.reduce((total, item) => {
+      return total + this.calculateSizewise(item);
+    }, 0);
+  }
 }
 
 export default Pipejobmakerservice;

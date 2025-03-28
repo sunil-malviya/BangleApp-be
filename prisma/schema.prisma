@@ -242,4 +242,6 @@ model PipeStock {
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   cuttingItems   CuttingItem[]
+  @@unique([organizationId, size, weight, color])
+
 }
