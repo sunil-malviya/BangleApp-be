@@ -51,6 +51,9 @@ model Organization {
   user   User   @relation(fields: [userId], references: [id])
   designs Design[] 
   pipeMakerJobs PipeMakerJob[]
+  cuttingKarigarJobs CuttingKarigarJob[]
+  pipeStocks PipeStock[]
+
  
 }
 
@@ -96,6 +99,7 @@ model Worker {
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
   PipeMakerJobs  PipeMakerJob[] 
+ CuttingKarigarJobs CuttingKarigarJob[]
 }
 
 enum workerType {
@@ -155,4 +159,87 @@ model Nagina {
   isdeleted      Int           @default(0) /// 1 = deleted and 0 not  
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
+  cuttingItems   CuttingItem[]
+}
+
+
+
+
+
+
+
+model Pipesize {
+     id             String        @id @default(uuid())
+     label          String
+     value          String      
+     order          Int
+     isdeleted      Int           @default(0) /// 1 = deleted and 0 not  
+     createdAt      DateTime      @default(now())
+     updatedAt      DateTime      @updatedAt
+}
+
+model Color {
+     id             String        @id @default(uuid())
+     name           String
+     value          String
+     isdeleted      Int           @default(0) /// 1 = deleted and 0 not  
+     createdAt      DateTime      @default(now())
+     updatedAt      DateTime      @updatedAt
+}
+
+
+
+
+
+
+model CuttingKarigarJob {
+  id               String        @id @default(uuid())
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id])
+  workerStatus     worktype
+  workerOnlineId   String?
+  workerOfflineId  String?
+  workerOffline    Worker? @relation(fields: [workerOfflineId], references: [id])
+  createdDate      DateTime
+  completionDate   DateTime?
+  totalAvgBangleQty Int
+  totalPipeQty      Int
+  totalitem         Int
+  totalPrice        Float
+  cuttingItems      CuttingItem[]
+  note             String?
+  status           Int   //  -  1 pending  2 completed
+  isdeleted        Int   @default(0) /// 1 = deleted and 0 not
+}
+
+model CuttingItem {
+  id               String        @id @default(uuid())
+  jobId            String
+  job              CuttingKarigarJob @relation(fields: [jobId], references: [id])
+  pipeStockId      String
+  pipeStock        PipeStock     @relation(fields: [pipeStockId], references: [id])
+  pipeQty          Int
+  AvgBangleQty     Int
+  bangleWidth      Int
+  naginaId         String
+  nagina           Nagina        @relation(fields: [naginaId], references: [id])
+  isdeleted        Int           @default(0) /// 1 = deleted and 0 not
+  perPipeCuttingPrice Float
+  receivedQty      Int
+  receivedDate     DateTime?
+  receivedLog      Json?
+}
+
+model PipeStock {
+  id             String        @id @default(uuid())
+  size           String
+  weight         String
+  color          String
+  stock          Int
+  isdeleted      Int           @default(0) /// 1 = deleted and 0 not
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  cuttingItems   CuttingItem[]
 }
