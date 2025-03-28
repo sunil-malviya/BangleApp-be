@@ -46,4 +46,20 @@ router.get(
   Pipecontroller.getPipejobbyId
 );
 
+
+
+
+router.put(
+  "/recieved/pipeitem",
+
+  //   checkInput("add_design"),
+  //   showParametersErrors,
+
+  Pipecontroller.Recievedpipeitems
+);
+
+
+
+
+
 export default router;
