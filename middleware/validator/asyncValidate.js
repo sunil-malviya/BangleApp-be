@@ -2,21 +2,17 @@ import Prisma from "./../../db/prisma.js";
 
 const processData3 = async (Model, id, fieldName, value) => {
   try {
-    
-    console.log(value, "value");
-    console.log(id, "id");
-
+  
     if (!value) return Promise.resolve();
 
     let exist;
 
-    exist = await Model.findUnique({
+    exist = await Model.findFirst({
       where: {
         organizationId: id,
         [fieldName]: value,
       },
     });
-
     return exist ? Promise.reject() : Promise.resolve();
   } catch (err) {
     return Promise.reject();

@@ -124,7 +124,7 @@ class MasterController {
     // ------------------------nagina master-----------------------------------
 
     static async createNaginaMaster(req, res) {
-      console.log("body data=", req.body);
+      // console.log("body data=", req.body);
       try {
         const body = req.getBody([
           "naginaName",
@@ -135,7 +135,7 @@ class MasterController {
         body.organizationId = req.user.organization.id;
   
         const naginaMaster = await MasterService.createNaginaMaster(body);
-  
+
         return res.status(201).json({
           status: true,
           data: naginaMaster,
@@ -152,7 +152,7 @@ class MasterController {
         const organizationId = req.user.organization.id || null;
         const naginaMasterId = req.params?.id || null;
         const search = req.query.search && req.query.search !== "undefined" ? req.query.search : false;
-  
+  console.log(organizationId, naginaMasterId, search);
         let condition = { organizationId };
         if (naginaMasterId) {
           condition.id = naginaMasterId;
@@ -163,7 +163,6 @@ class MasterController {
         }
   
         const naginaMaster = await MasterService.fetchNaginaMaster(condition);
-  
         return res.status(200).json({
           status: true,
           data: naginaMaster,
