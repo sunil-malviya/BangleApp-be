@@ -152,8 +152,8 @@ model PipeItem {
 
 model Nagina {
   id             String        @id @default(uuid())
-  naginaName     String        @unique
-  naginaSize     String        @unique
+  naginaName     String        
+  naginaSize     String        
   image          String?
   organizationId String
   isdeleted      Int           @default(0) /// 1 = deleted and 0 not  
