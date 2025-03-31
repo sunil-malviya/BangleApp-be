@@ -105,5 +105,4 @@ const asyncValidate = (method) => {
       return [];
   }
 };
-
 export { checkInput, asyncValidate, showParametersErrors };
