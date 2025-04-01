@@ -134,6 +134,7 @@ model PipeMakerJob {
   materialDetails Json
   status          Int   //  -  1 pending  2 completed
   isdeleted       Int   @default(0) /// 1 = deleted and 0 not 
+  note            String? @default("")
 }
 
 model PipeItem {
@@ -148,6 +149,7 @@ model PipeItem {
   total_qty       Int
   total_item      Int
   isdeleted       Int   @default(0) /// 1 = deleted and 0 not 
+
 }
 
 model Nagina {
@@ -200,6 +202,7 @@ model CuttingKarigarJob {
   note             String?
   status           Int   //  -  1 pending  2 completed
   isdeleted        Int   @default(0) /// 1 = deleted and 0 not
+
 }
 
 model CuttingItem {
@@ -268,9 +271,15 @@ model PipeStock {
   isdeleted      Int                @default(0) /// 1 = deleted and 0 not
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
+  isdeleted      Int                @default(0) /// 1 = deleted and 0 not
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
   organizationId String
   organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   cuttingItems   CuttingItem[]
+  transactions   StockTransaction[]
+  
   transactions   StockTransaction[]
   
   @@unique([organizationId, size, weight, color])
