@@ -1,0 +1,32 @@
+import Prisma from './../../../../db/prisma.js';
+
+class PipeStockService {
+
+// ------------------------worker master-----------------------------------
+
+
+
+
+  static async  GetPipeStock (cond,page) {
+    return await Prisma.pipeStock.findMany({
+      where: cond,
+      skip: (page - 1) * 10,
+      take: 10,
+    });
+  }
+
+
+
+
+
+
+
+
+  
+
+
+
+
+}
+
+export default PipeStockService;
