@@ -13,6 +13,7 @@ class Pipejobmakerservice {
 
       createdDate: data.createdDate,
       completionDate: data.completionDate,
+      note:data.note
     };
     obj.status = 1;
     //--------------------- check worker type ---------------------------------------//
