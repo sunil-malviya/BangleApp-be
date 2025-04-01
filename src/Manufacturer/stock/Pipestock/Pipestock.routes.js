@@ -15,4 +15,12 @@ router.get(
   PipeStockController.getPipestock
 );
 
+router.get(
+  "/:id",
+
+
+  PipeStockController.getPipestockById
+);
+
+
 export default router;

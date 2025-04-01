@@ -13,7 +13,7 @@ class Pipejobmakerservice {
 
       createdDate: data.createdDate,
       completionDate: data.completionDate,
-      note:data.note
+      note: data.note,
     };
     obj.status = 1;
     //--------------------- check worker type ---------------------------------------//
@@ -137,12 +137,12 @@ class Pipejobmakerservice {
       const allpipeitem = await tx.pipeItem.findMany({
         where: { jobId: result.jobId },
         select: {
-          colorQuantities: true, 
+          colorQuantities: true,
         },
       });
 
-      const totalrecieved = await this.totalRecievedPipe(allpipeitem)+ data.quantity;
-
+      const totalrecieved =
+        (await this.totalRecievedPipe(allpipeitem)) + data.quantity;
 
       //---------------- build fresh object with add current recieved qty  ------///
       const updatedData = await this.Findandupdateitem(
@@ -175,7 +175,22 @@ class Pipejobmakerservice {
         },
       });
 
-      //--------------------------------------------------------------------------------------------////
+      let transdata = {
+        stockType: "PIPE",
+        transactionType: "INWARD",
+        organization: { connect: { id: data.organization_id } },
+        jobId: result.jobId,
+        remainingStock: record.stock,
+        quantity: data.quantity,
+
+        pipeStock: { connect: { id: record.id } },
+      };
+
+      //-----------------------------------------------------------------------------------------------------------------//
+
+      await tx.StockTransaction.create({ data: transdata });
+
+      //------------------------------------------------------------------------------------------------------------------//
 
       await tx.pipeItem.update({
         where: { id },
@@ -184,8 +199,8 @@ class Pipejobmakerservice {
 
       await tx.pipeMakerJob.updateMany({
         where: {
-          id:result.jobId,
-          totalPipeQty: totalrecieved ,
+          id: result.jobId,
+          totalPipeQty: totalrecieved,
         },
         data: {
           status: 2,
@@ -220,7 +235,7 @@ class Pipejobmakerservice {
     return data;
   }
 
-  //------------------  calcualte size wise total recieved pipe ------------------------------//
+  //-------------------------------------------------  calcualte size wise total recieved pipe ------------------------------------------------------------------------------//
 
   static calculateSizewise = (item) => {
     return item.colorQuantities.reduce((sum, cq) => sum + cq.totalrecieved, 0);
@@ -231,6 +246,8 @@ class Pipejobmakerservice {
       return total + this.calculateSizewise(item);
     }, 0);
   }
+
+  /////----------------------------------------------------------------------------/////
 }
 
 export default Pipejobmakerservice;
