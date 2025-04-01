@@ -53,8 +53,8 @@ model Organization {
   pipeMakerJobs PipeMakerJob[]
   cuttingKarigarJobs CuttingKarigarJob[]
   pipeStocks PipeStock[]
-
- 
+  cuttingStocks CuttingStock[]
+  stockTransactions StockTransaction[]
 }
 
 enum OrganizationType {
@@ -160,13 +160,8 @@ model Nagina {
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
   cuttingItems   CuttingItem[]
+  cuttingStocks  CuttingStock[]
 }
-
-
-
-
-
-
 
 model Pipesize {
      id             String        @id @default(uuid())
@@ -186,11 +181,6 @@ model Color {
      createdAt      DateTime      @default(now())
      updatedAt      DateTime      @updatedAt
 }
-
-
-
-
-
 
 model CuttingKarigarJob {
   id               String        @id @default(uuid())
@@ -228,20 +218,81 @@ model CuttingItem {
   receivedQty      Int
   receivedDate     DateTime?
   receivedLog      Json?
+  totalItemBangles Int           @default(0)
+}
+
+enum StockType {
+  PIPE
+  NAGINA
+  CUTTING
+  MATERIAL
+  BANGLE
+  OTHER
+}
+
+enum TransactionType {
+  INWARD
+  OUTWARD
+  ADJUSTMENT
+  RETURN
+}
+
+model StockTransaction {
+  id             String           @id @default(uuid())
+  stockId        String
+  stockType      StockType
+  transactionType TransactionType
+  quantity       Int
+  remainingStock Int
+  note           String?
+  jobId          String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  organizationId String?
+  organization   Organization?    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  // References based on stockType
+  pipeStock      PipeStock?       @relation(fields: [stockId], references: [id], onDelete: Cascade, map: "StockTransaction_pipeStock_fkey")
+  cuttingStock   CuttingStock?    @relation(fields: [stockId], references: [id], onDelete: Cascade, map: "StockTransaction_cuttingStock_fkey")
+
+  @@index([stockId, stockType])
+  @@index([transactionType])
+  @@index([createdAt])
 }
 
 model PipeStock {
-  id             String        @id @default(uuid())
+  id             String             @id @default(uuid())
   size           String
   weight         String
   color          String
   stock          Int
-  isdeleted      Int           @default(0) /// 1 = deleted and 0 not
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  isdeleted      Int                @default(0) /// 1 = deleted and 0 not
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
   organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   cuttingItems   CuttingItem[]
+  transactions   StockTransaction[]
+  
   @@unique([organizationId, size, weight, color])
-
 }
+
+model CuttingStock {
+  id             String             @id @default(uuid())
+  size           String
+  color          String
+  width          Float
+  naginaId       String
+  nagina         Nagina             @relation(fields: [naginaId], references: [id])
+  quantity       Int
+  batchNumber    String?
+  jobId          String?            // Reference to the cutting job that created this stock
+  isdeleted      Int                @default(0) /// 1 = deleted and 0 not
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  organizationId String
+  organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  transactions   StockTransaction[]
+
+  @@unique([organizationId, size, color, width, naginaId])
+}
+
