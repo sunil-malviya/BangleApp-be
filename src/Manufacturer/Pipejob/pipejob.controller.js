@@ -11,7 +11,7 @@ class PipejobController {
         "pipeItems",
         "materialItems",
         "isOnlineWorker",
-        "note",
+        "note"
       ]);
 
       const data = await PipejobService.Arrangedata(body, organization_id);
@@ -113,7 +113,7 @@ class PipejobController {
         "pipeItems",
         "materialItems",
         "isOnlineWorker",
-        "note",
+        "note"
       ]);
 
       const data = await PipejobService.Arrangedata(body, organization_id);
@@ -157,7 +157,7 @@ class PipejobController {
         weight: body.weight,
         color: body.item.color.name,
         newLog,
-        organization_id: organization_id,
+        organization_id:organization_id
       });
       res.success(result);
     } catch (error) {
