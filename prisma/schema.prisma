@@ -271,16 +271,11 @@ model PipeStock {
   isdeleted      Int                @default(0) /// 1 = deleted and 0 not
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
-  isdeleted      Int                @default(0) /// 1 = deleted and 0 not
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
   organizationId String
-  organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   cuttingItems   CuttingItem[]
   transactions   StockTransaction[]
   
-  transactions   StockTransaction[]
   
   @@unique([organizationId, size, weight, color])
 }
