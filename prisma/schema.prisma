@@ -23,6 +23,7 @@ model User {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   organization Organization?
+  pipeMakerJobs PipeMakerJob[] @relation("WorkerOnlineRelation")
 }
 
 model Organization {
@@ -121,7 +122,9 @@ model PipeMakerJob {
   organizationId  String
   workerStatus    worktype
 
-  workerOnlineId  String? 
+
+  workerOnlineId   String?
+  workerOnline     User? @relation(name: "WorkerOnlineRelation", fields: [workerOnlineId], references: [id])
 
   workerOfflineId String?  
   workerOffline   Worker? @relation(fields: [workerOfflineId], references: [id])
@@ -271,15 +274,10 @@ model PipeStock {
   isdeleted      Int                @default(0) /// 1 = deleted and 0 not
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
-
-
   organizationId String
   organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
- 
   cuttingItems   CuttingItem[]
   transactions   StockTransaction[]
-  
-
   
   @@unique([organizationId, size, weight, color])
 }
@@ -303,4 +301,3 @@ model CuttingStock {
 
   @@unique([organizationId, size, color, width, naginaId])
 }
-
