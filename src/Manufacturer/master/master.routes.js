@@ -11,6 +11,11 @@ import {
 
 // --------------------------worker route---------------------------------------------
 
+router.get("/worker/online",
+  // checkInput("organization_id"),
+  // showParametersErrors,
+  MasterController.FetchPipemaker
+) 
 router.get("/worker/:id?",
   // checkInput("organization_id"),
   // showParametersErrors,
@@ -60,6 +65,15 @@ router.delete("/nagina/:id",
   // showParametersErrors,
   MasterController.deleteByIdNaginaMaster
 );
+
+
+
+
+
+
+
+
+
 
 
 export default router;

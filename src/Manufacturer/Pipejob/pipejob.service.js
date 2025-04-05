@@ -22,7 +22,7 @@ class Pipejobmakerservice {
     //   : (obj.workerOfflineId = data.pipeMakerId);
 
     data.isOnlineWorker
-      ? (obj.workerOnlineId = data.pipeMakerId)
+      ? (obj.workerOnline ={ connect: { id: data.pipeMakerId } })
       : (obj.workerOffline = { connect: { id: data.pipeMakerId } });
 
     data.isOnlineWorker
@@ -70,6 +70,7 @@ class Pipejobmakerservice {
       include: {
         organization: true,
         workerOffline: true,
+        workerOnline: true,
         pipeItems: true,
       },
       // orderBy: {
@@ -85,6 +86,7 @@ class Pipejobmakerservice {
       include: {
         organization: true,
         workerOffline: true,
+        workerOnline: true,
         pipeItems: true,
       },
     });
@@ -248,6 +250,8 @@ class Pipejobmakerservice {
   }
 
   /////----------------------------------------------------------------------------/////
+
+
 }
 
 export default Pipejobmakerservice;
