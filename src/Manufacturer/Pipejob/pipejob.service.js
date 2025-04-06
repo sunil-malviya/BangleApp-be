@@ -22,7 +22,7 @@ class Pipejobmakerservice {
     //   : (obj.workerOfflineId = data.pipeMakerId);
 
     data.isOnlineWorker
-      ? (obj.workerOnline ={ connect: { id: data.pipeMakerId } })
+      ? (obj.workerOnline = { connect: { id: data.pipeMakerId } })
       : (obj.workerOffline = { connect: { id: data.pipeMakerId } });
 
     data.isOnlineWorker
@@ -179,12 +179,13 @@ class Pipejobmakerservice {
 
       let transdata = {
         stockType: "PIPE",
+
         transactionType: "INWARD",
         organization: { connect: { id: data.organization_id } },
         jobId: result.jobId,
         remainingStock: record.stock,
         quantity: data.quantity,
-
+        stockId: record.id,
         pipeStock: { connect: { id: record.id } },
       };
 
@@ -250,8 +251,6 @@ class Pipejobmakerservice {
   }
 
   /////----------------------------------------------------------------------------/////
-
-
 }
 
 export default Pipejobmakerservice;

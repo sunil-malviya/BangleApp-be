@@ -256,9 +256,18 @@ model StockTransaction {
   updatedAt      DateTime         @updatedAt
   organizationId String?
   organization   Organization?    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  // References based on stockType
-  pipeStock      PipeStock?       @relation(fields: [stockId], references: [id], onDelete: Cascade, map: "StockTransaction_pipeStock_fkey")
-  cuttingStock   CuttingStock?    @relation(fields: [stockId], references: [id], onDelete: Cascade, map: "StockTransaction_cuttingStock_fkey")
+  
+
+  pipeStockId      String?
+  pipeStock        PipeStock?       @relation(fields: [pipeStockId], references: [id], onDelete: Cascade)
+
+  cuttingStockId   String?
+  cuttingStock     CuttingStock?    @relation(fields: [cuttingStockId], references: [id], onDelete: Cascade)
+
+  
+
+  //pipeStock      PipeStock?       @relation(fields: [stockId], references: [id], onDelete: Cascade, map: "StockTransaction_pipeStock_fkey")
+ // cuttingStock   CuttingStock?    @relation(fields: [stockId], references: [id], onDelete: Cascade, map: "StockTransaction_cuttingStock_fkey")
 
   @@index([stockId, stockType])
   @@index([transactionType])
