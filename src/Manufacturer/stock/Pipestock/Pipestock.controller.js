@@ -51,15 +51,15 @@ class PipeStockController {
 
   static async getPipestockById(req, res) {
     try {
-      console.log(req.params.id)
+
       const organization_id = req.user.organization.id;
       const page = req.query.pageNo ? parseInt(req.query.pageNo, 10) : 1;
       const record = await PipeStockService.GetPipeStocktranstion({
-        stockId: req.param.id,
+        stockId: req.params.id, 
         stockType: "PIPE",
-        organizationId:organization_id
-
-      },page);
+        organizationId: organization_id
+    }, page);
+    
 
       return res.status(200).json({
         status: true,

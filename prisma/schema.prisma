@@ -23,6 +23,7 @@ model User {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   organization Organization?
+  pipeMakerJobs PipeMakerJob[] @relation("WorkerOnlineRelation")
 }
 
 model Organization {
@@ -121,7 +122,9 @@ model PipeMakerJob {
   organizationId  String
   workerStatus    worktype
 
-  workerOnlineId  String? 
+
+  workerOnlineId   String?
+  workerOnline     User? @relation(name: "WorkerOnlineRelation", fields: [workerOnlineId], references: [id])
 
   workerOfflineId String?  
   workerOffline   Worker? @relation(fields: [workerOfflineId], references: [id])
@@ -276,7 +279,6 @@ model PipeStock {
   cuttingItems   CuttingItem[]
   transactions   StockTransaction[]
   
-  
   @@unique([organizationId, size, weight, color])
 }
 
@@ -299,4 +301,3 @@ model CuttingStock {
 
   @@unique([organizationId, size, color, width, naginaId])
 }
-
