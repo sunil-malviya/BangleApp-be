@@ -11,7 +11,7 @@ class PipejobController {
         "pipeItems",
         "materialItems",
         "isOnlineWorker",
-        "note"
+        "note",
       ]);
 
       const data = await PipejobService.Arrangedata(body, organization_id);
@@ -36,6 +36,14 @@ class PipejobController {
         isdeleted: 0,
         status: filter.status,
       };
+
+      if (filter.status === 1) {
+        cond.pipemakerstatus = { not: 1 };
+      }
+
+      if (filter.status === 2) {
+        cond.pipemakerstatus = 1;
+      }
 
       if (filter.dateRange && filter.dateRange.from && filter.dateRange.to) {
         cond.createdDate = {
@@ -113,7 +121,7 @@ class PipejobController {
         "pipeItems",
         "materialItems",
         "isOnlineWorker",
-        "note"
+        "note",
       ]);
 
       const data = await PipejobService.Arrangedata(body, organization_id);
@@ -157,7 +165,7 @@ class PipejobController {
         weight: body.weight,
         color: body.item.color.name,
         newLog,
-        organization_id:organization_id
+        organization_id: organization_id,
       });
       res.success(result);
     } catch (error) {
@@ -166,23 +174,18 @@ class PipejobController {
     }
   }
 
+  static async updatejobstatus(req, res) {
+    try {
+      const id = req.params.id;
 
+      const result = await PipejobService.updatejobstatus(id, 1);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      res.success(result);
+    } catch (error) {
+      console.log(error);
+      res.someThingWentWrong(error);
+    }
+  }
 }
 
 export default PipejobController;

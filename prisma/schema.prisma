@@ -24,6 +24,7 @@ model User {
   updatedAt    DateTime      @updatedAt
   organization Organization?
   pipeMakerJobs PipeMakerJob[] @relation("WorkerOnlineRelation")
+  cuttingKarigarJobs CuttingKarigarJob[]
 }
 
 model Organization {
@@ -129,17 +130,19 @@ model PipeMakerJob {
   workerOfflineId String?  
   workerOffline   Worker? @relation(fields: [workerOfflineId], references: [id])
 
-  createdDate      DateTime
+  createdDate     DateTime
   completionDate  DateTime?
   totalPipeQty    Int
   totalitem       Int
   pipeItems       PipeItem[]
   materialDetails Json
-  status          Int   //  -  1 pending  2 completed
+  status          Int   //  - 0 draft 1 pending  2 progress    3 completed 
   isdeleted       Int   @default(0) /// 1 = deleted and 0 not 
+  pipemakerstatus Int   @default(0)   //---  1 accept  2 reject
+  workernote      String?
   note            String? @default("")
-}
 
+}
 model PipeItem {
   id              String       @id @default(uuid())
   jobId           String
@@ -193,6 +196,7 @@ model CuttingKarigarJob {
   organization     Organization @relation(fields: [organizationId], references: [id])
   workerStatus     worktype
   workerOnlineId   String?
+  workerOnline     User?         @relation(fields: [workerOnlineId], references: [id])
   workerOfflineId  String?
   workerOffline    Worker? @relation(fields: [workerOfflineId], references: [id])
   createdDate      DateTime
@@ -203,9 +207,9 @@ model CuttingKarigarJob {
   totalPrice        Float
   cuttingItems      CuttingItem[]
   note             String?
-  status           Int   //  -  1 pending  2 completed
+  status           Int   //  -  0 draft, 1 pending (online), 2 completed, 3 in progress (offline)
   isdeleted        Int   @default(0) /// 1 = deleted and 0 not
-
+  jobNumber        Int   @default(0)
 }
 
 model CuttingItem {

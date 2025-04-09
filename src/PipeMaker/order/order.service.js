@@ -35,6 +35,16 @@ class Orderservice {
 
 
 
+
+
+  static async updatejobstatus(id, data) {
+    return await Prisma.pipeMakerJob.update({
+      where: { id },
+      data:data ,
+    });
+  }
+
+
   /////----------------------------------------------------------------------------/////
 }
 
