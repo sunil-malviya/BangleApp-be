@@ -1,4 +1,5 @@
 import CuttingJobService from "./cuttingjob.service.js";
+import  Prisma  from "../../../db/prisma.js";
 
 class CuttingJobController {
   static async createCuttingJob(req, res) {
@@ -127,8 +128,18 @@ class CuttingJobController {
       let cond = {
         organizationId: organization_id,
         isdeleted: 0,
-        status: filter.status,
       };
+
+      // Handle status filter differently based on whether it's an array or single value
+      if (filter.status !== undefined) {
+        if (Array.isArray(filter.status)) {
+          // Use Prisma's 'in' operator for array of statuses
+          cond.status = { in: filter.status };
+        } else {
+          // Direct assignment for single status
+          cond.status = filter.status;
+        }
+      }
 
       if (filter.dateRange && filter.dateRange.from && filter.dateRange.to) {
         cond.createdDate = {
@@ -515,25 +526,6 @@ class CuttingJobController {
       // Try to get data from the database
       let result = await CuttingJobService.getNaginhas(organization_id);
       
-      // If no data from database, return test data
-      if (!result || result.length === 0) {
-        console.log("[DEBUG] No data from database, returning test data");
-        result = [
-          { 
-            id: "test-nagina1", 
-            naginaName: "Test Nagina 1",
-            naginaSize: "Small",
-            organizationId: organization_id 
-          },
-          { 
-            id: "test-nagina2", 
-            naginaName: "Test Nagina 2",
-            naginaSize: "Medium",
-            organizationId: organization_id 
-          }
-        ];
-      }
-      
       console.log("[DEBUG] Naginhas result:", result ? "Data found" : "No data");
       console.log("[DEBUG] Sending response with type:", typeof result, "and length:", Array.isArray(result) ? result.length : "N/A");
       
@@ -587,6 +579,128 @@ class CuttingJobController {
         status: false,
         message: error.message || 'An error occurred while retrieving stock transactions',
         data: []
+      });
+    }
+  }
+
+  static async startCuttingJob(req, res) {
+    try {
+      console.log('[BACKEND CONTROLLER] Start Cutting Job - Request received');
+      
+      const organization_id = req.user.organization.id;
+      const jobId = req.params.id;
+      
+      console.log('[BACKEND CONTROLLER] Organization ID:', organization_id);
+      console.log('[BACKEND CONTROLLER] Job ID:', jobId);
+
+      // Get the job with its items
+      const job = await Prisma.cuttingKarigarJob.findUnique({
+        where: { id: jobId },
+        include: {
+          cuttingItems: {
+            include: {
+              pipeStock: true
+            }
+          }
+        }
+      });
+
+      if (!job) {
+        return res.status(404).json({
+          status: false,
+          message: 'Cutting job not found',
+          data: null
+        });
+      }
+
+      if (job.status !== 0) {
+        return res.status(400).json({
+          status: false,
+          message: 'Job is not in draft status',
+          data: null
+        });
+      }
+
+      // Start a transaction to ensure data consistency
+      const result = await Prisma.$transaction(async (tx) => {
+        // Update pipe stock quantities
+        for (const item of job.cuttingItems) {
+          const currentStock = await tx.pipeStock.findUnique({
+            where: { id: item.pipeStockId }
+          });
+
+          if (!currentStock || currentStock.stock < item.pipeQty) {
+            throw new Error(`Insufficient stock for pipe ${item.pipeStockId}`);
+          }
+
+          // Update pipe stock
+          await tx.pipeStock.update({
+            where: { id: item.pipeStockId },
+            data: {
+              stock: currentStock.stock - item.pipeQty
+            }
+          });
+
+          // Create stock transaction with more careful error handling
+          try {
+            await tx.stockTransaction.create({
+              data: {
+                stockId: item.pipeStockId,
+                pipeStockId: item.pipeStockId,
+                stockType: "PIPE",
+                transactionType: "OUTWARD",
+                quantity: item.pipeQty,
+                remainingStock: currentStock.stock - item.pipeQty,
+                jobId: jobId,
+                organizationId: organization_id,
+                note: `Stock deducted for cutting job #${jobId}`
+              }
+            });
+            console.log(`[BACKEND CONTROLLER] Created stock transaction for item: ${item.id}`);
+          } catch (transactionError) {
+            console.error('[BACKEND CONTROLLER] Error creating stock transaction:', transactionError);
+            console.error('[BACKEND CONTROLLER] Error creating stock transaction details:', {
+              stockId: item.pipeStockId,
+              stockType: "PIPE",
+              transactionType: "OUTWARD",
+              quantity: item.pipeQty
+            });
+            
+            // Re-throw to abort the transaction
+            throw new Error(`Error creating stock transaction: ${transactionError.message}`);
+          }
+        }
+
+        // Update job status based on worker type
+        const newStatus = job.workerStatus === 'Online' ? 1 : 3; // 1 = pending (online), 3 = in progress (offline)
+        
+        const updatedJob = await tx.cuttingKarigarJob.update({
+          where: { id: jobId },
+          data: { status: newStatus },
+          include: {
+            cuttingItems: {
+              include: {
+                pipeStock: true
+              }
+            }
+          }
+        });
+
+        return updatedJob;
+      });
+
+      return res.status(200).json({
+        status: true,
+        message: 'Cutting job started successfully',
+        data: result
+      });
+
+    } catch (error) {
+      console.error('[BACKEND CONTROLLER] Error starting cutting job:', error);
+      return res.status(500).json({
+        status: false,
+        message: error.message || 'Failed to start cutting job',
+        data: null
       });
     }
   }

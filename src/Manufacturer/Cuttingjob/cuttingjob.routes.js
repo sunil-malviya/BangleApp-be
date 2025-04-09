@@ -106,4 +106,10 @@ router.delete(
   CuttingJobController.deleteCuttingJobs
 );
 
+// Start cutting job
+router.put(
+  "/:id/start",
+  CuttingJobController.startCuttingJob
+);
+
 export default router; 
