@@ -8,11 +8,8 @@ import {
   showParametersErrors,
 } from "./../../../middleware/validator/index.js";
 
-
-
 router.get(
   "/",
-
 
   ordercontroller.getPipejobs
 );
@@ -23,17 +20,22 @@ router.get(
   //   checkInput("add_design"),
   //   showParametersErrors,
 
-
   ordercontroller.getPipejobs
+);
+
+router.put(
+  "/orderstatus/:id",
+
+  ordercontroller.updatepipemakerstatus
 );
 
 
 
+router.put(
+  "/orderstatus/reject/:id",
 
-
-
-
-
+  ordercontroller.rejectpipemakerjob
+);
 
 
 export default router;
