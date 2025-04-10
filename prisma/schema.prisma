@@ -24,6 +24,7 @@ model User {
   updatedAt    DateTime      @updatedAt
   organization Organization?
   pipeMakerJobs PipeMakerJob[] @relation("WorkerOnlineRelation")
+  cuttingKarigarJobs CuttingKarigarJob[]
 }
 
 model Organization {
@@ -195,6 +196,7 @@ model CuttingKarigarJob {
   organization     Organization @relation(fields: [organizationId], references: [id])
   workerStatus     worktype
   workerOnlineId   String?
+  workerOnline     User?         @relation(fields: [workerOnlineId], references: [id])
   workerOfflineId  String?
   workerOffline    Worker? @relation(fields: [workerOfflineId], references: [id])
   createdDate      DateTime
@@ -208,6 +210,7 @@ model CuttingKarigarJob {
   status           Int   //  -  0 draft, 1 pending (online), 2 completed, 3 in progress (offline)
   isdeleted        Int   @default(0) /// 1 = deleted and 0 not
   jobNumber        Int   @default(0)
+  cuttingStock     CuttingStock[]
 }
 
 model CuttingItem {
@@ -301,8 +304,10 @@ model CuttingStock {
   naginaId       String
   nagina         Nagina             @relation(fields: [naginaId], references: [id])
   quantity       Int
+  weight         String
   batchNumber    String?
   jobId          String?            // Reference to the cutting job that created this stock
+  CuttingKarigarJob CuttingKarigarJob? @relation(fields: [jobId], references: [id])     
   isdeleted      Int                @default(0) /// 1 = deleted and 0 not
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
@@ -310,5 +315,5 @@ model CuttingStock {
   organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   transactions   StockTransaction[]
 
-  @@unique([organizationId, size, color, width, naginaId])
+  @@unique([organizationId, size, color, width, naginaId,weight])
 }

@@ -61,7 +61,6 @@ class CuttingJobService {
         const jobCount = await tx.cuttingKarigarJob.count({
           where: { 
             organizationId,
-            isdeleted: 0 // Only count non-deleted jobs
           }
         });
         
@@ -134,6 +133,7 @@ class CuttingJobService {
       include: {
         organization: true,
         workerOffline: true,
+        workerOnline: true,
         cuttingItems: {
           include: {
             pipeStock: true,
@@ -164,35 +164,6 @@ class CuttingJobService {
     if (!result) {
       console.error('[BACKEND SERVICE] Job not found with ID:', id);
       return null;
-    }
-    
-    // Count jobs in this organization to get job number
-    if (result.organization && result.organization.id) {
-      try {
-        // For safety, check if the job has a creation date
-        if (!result.createdDate) {
-          console.warn('[BACKEND SERVICE] Job does not have createdDate field:', id);
-          result.jobNumber = 1; // Default to 1 if no creation date
-        } else {
-          const jobCount = await Prisma.cuttingKarigarJob.count({
-            where: { 
-              organizationId: result.organization.id,
-              createdDate: { lt: result.createdDate } // Use createdDate instead of createdAt
-            }
-          });
-          
-          // Add job number to the result
-          result.jobNumber = jobCount + 1;
-          console.log('[BACKEND SERVICE] Calculated job number for job:', result.jobNumber);
-        }
-      } catch (error) {
-        console.error('[BACKEND SERVICE] Error calculating job number:', error.message);
-        // Provide a fallback job number
-        result.jobNumber = 1;
-      }
-    } else {
-      console.warn('[BACKEND SERVICE] Could not determine organization for job number calculation');
-      result.jobNumber = 1; // Default to 1 if no organization
     }
     
     console.log('[BACKEND SERVICE] Found job with ID:', id);
@@ -470,14 +441,16 @@ class CuttingJobService {
           const width = cuttingItem.bangleWidth;
           const naginaId = cuttingItem.naginaId;
           const organizationId = cuttingItem.job.organizationId;
+          const weight = cuttingItem.pipeStock.weight;
           
-          if (!size || !color || !width || !naginaId || !organizationId) {
+          if (!size || !color || !width || !naginaId || !organizationId || !weight) {
             console.error('[BACKEND SERVICE] Missing required properties for CuttingStock:', {
               size,
               color,
               width,
               naginaId,
-              organizationId
+              organizationId,
+              weight
             });
             throw new Error('Missing required properties for CuttingStock');
           }
@@ -488,7 +461,8 @@ class CuttingJobService {
             size,
             color,
             width,
-            naginaId
+            naginaId,
+            weight
           });
           
           const existingCuttingStock = await tx.cuttingStock.findFirst({
@@ -498,6 +472,7 @@ class CuttingJobService {
               color,
               width,
               naginaId,
+              weight,
               isdeleted: 0
             }
           });
@@ -524,13 +499,14 @@ class CuttingJobService {
             console.log('[BACKEND SERVICE] Creating new cutting stock');
             
             // Generate batch number based on current date and job ID
-            const batchNumber = `CUT-${new Date().toISOString().substring(0, 10)}-${cuttingItem.jobId.substring(0, 6)}`;
+            const batchNumber = `CUT-Bangle-${new Date().toISOString().slice(0, 10)}-${cuttingItem.jobId}`;
             
             cuttingStock = await tx.cuttingStock.create({
               data: {
                 size,
                 color,
                 width,
+                weight,
                 naginaId,
                 quantity: data.quantity,
                 batchNumber,
@@ -551,7 +527,7 @@ class CuttingJobService {
                 transactionType,
                 quantity: data.quantity,
                 remainingStock: cuttingStock.quantity,
-                note: `CUT-JOB-${cuttingItem.job.jobNumber} | Karigar: ${cuttingItem.job.workerOffline?.fullName || 'Online Worker'} | Received: ${data.quantity} bangles | Date: ${new Date().toLocaleDateString()}`,
+                note: `stock received from cutting job CUT-JOB-${cuttingItem.job.jobNumber}`,
                 jobId: cuttingItem.jobId,
                 organizationId
               }

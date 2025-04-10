@@ -7,8 +7,6 @@ class CuttingJobController {
       console.log('[BACKEND CONTROLLER] Create Cutting Job - Request received');
       
       const organization_id = req.user.organization.id;
-      console.log('[BACKEND CONTROLLER] Organization ID:', organization_id);
-      
       const body = req.getBody([
         "karigarId",
         "createdDate",
@@ -18,14 +16,7 @@ class CuttingJobController {
         "isOnlineWorker",
       ]);
       
-      console.log('[BACKEND CONTROLLER] Request body (karigarId, date info):', {
-        karigarId: body.karigarId,
-        isOnlineWorker: body.isOnlineWorker,
-        createdDate: body.createdDate,
-        completionDate: body.completionDate,
-        itemCount: body.cuttingItems?.length || 0
-      });
-      
+console.log('[BACKEND CONTROLLER] Body:', req.body);
       // Validate that cuttingItems exists and is an array
       if (!body.cuttingItems || !Array.isArray(body.cuttingItems) || body.cuttingItems.length === 0) {
         console.error('[BACKEND CONTROLLER] No cutting items provided or invalid format');
@@ -155,11 +146,16 @@ class CuttingJobController {
             mode: "insensitive",
           },
         };
-      }
-      const jobNumber = await CuttingJobService.getCuttingJobByJobNumber(organization_id);
-      const records = await CuttingJobService.getAllCuttingJobs(cond, page);
-      records['jobNumber'] = jobNumber;
+        cond.workerOnline = {
+          fullName: {
+            contains: filter.search,
+            mode: "insensitive",
+          },
+        };
+        }
       
+      const records = await CuttingJobService.getAllCuttingJobs(cond, page);
+      // console.log("cutting job list >>>",records)
       return res.status(200).json({
         status: true,
         message: 'SUCCESS',
@@ -197,34 +193,15 @@ class CuttingJobController {
           });
         }
         
-        // Get the organization-wide job number count to include in the response
-        let jobNumber = 1; // Default value
-        try {
-          jobNumber = await CuttingJobService.getCuttingJobByJobNumber(organization_id);
-        } catch (jobNumberError) {
-          console.error('[BACKEND CONTROLLER] Error getting job number:', jobNumberError.message);
-          // We'll use the default value of 1 here
-        }
-        
-        console.log('[BACKEND CONTROLLER] Found job with ID:', result.id);
-        console.log('[BACKEND CONTROLLER] Organization job number:', jobNumber);
-        
-        // Add job number directly to the result object before sending response
-        result.jobNumber = result.jobNumber || jobNumber;
-        
-        // Create a response using the project's standard format
         const response = {
           status: true,
           message: 'SUCCESS',
           data: result,
-          jobNumber: jobNumber,
-          organizationJobNumber: jobNumber
         };
         
-        console.log('[BACKEND CONTROLLER] Sending job details with job number:', jobNumber);
         return res.status(200).json(response);
       } catch (serviceError) {
-        console.error('[BACKEND CONTROLLER] Service error:', serviceError.message);
+        console.log('[BACKEND CONTROLLER] Service error:', serviceError);
         
         if (serviceError.name === 'PrismaClientKnownRequestError') {
           // Handle Prisma specific errors more gracefully
@@ -359,12 +336,6 @@ class CuttingJobController {
       const organization_id = req.user.organization.id;
       const body = req.getBody(["id", "quantity"]);
       
-      console.log('[BACKEND CONTROLLER] Extracted body:', body);
-      console.log('[BACKEND CONTROLLER] User details:', {
-        name,
-        organization_id,
-        userHasOrgInfo: !!req.user.organization
-      });
       
       // Validate input parameters
       if (!body.id) {
@@ -408,25 +379,12 @@ class CuttingJobController {
           });
         }
         
-        // Get the organization-wide job number count to include in the response
-        let jobNumber = 1;
-        try {
-          jobNumber = await CuttingJobService.getCuttingJobByJobNumber(organization_id);
-        } catch (error) {
-          console.error('[BACKEND CONTROLLER] Error getting job number:', error.message);
-        }
-        
         // Include job number in the response
         const response = {
           status: true,
           message: 'Item received successfully',
           data: result,
-          jobNumber: jobNumber,
-          organizationJobNumber: jobNumber
         };
-        
-        console.log('[BACKEND CONTROLLER] Successfully received cutting item:', result.id);
-        console.log('[BACKEND CONTROLLER] Including job number in response:', jobNumber);
         
         return res.status(200).json(response);
       } catch (serviceError) {
@@ -585,13 +543,9 @@ class CuttingJobController {
 
   static async startCuttingJob(req, res) {
     try {
-      console.log('[BACKEND CONTROLLER] Start Cutting Job - Request received');
       
       const organization_id = req.user.organization.id;
       const jobId = req.params.id;
-      
-      console.log('[BACKEND CONTROLLER] Organization ID:', organization_id);
-      console.log('[BACKEND CONTROLLER] Job ID:', jobId);
 
       // Get the job with its items
       const job = await Prisma.cuttingKarigarJob.findUnique({
@@ -640,7 +594,8 @@ class CuttingJobController {
               stock: currentStock.stock - item.pipeQty
             }
           });
-
+         
+          const noteKarigar = `CUT-JOB-${job.jobNumber} | Karigar: ${job?.workerStatus == 'Online' ? job?.workerOnline?.fullName : job?.workerOffline?.fullName} | Received: ${job.quantity} bangles | Date: ${new Date().toLocaleDateString()}`;
           // Create stock transaction with more careful error handling
           try {
             await tx.stockTransaction.create({
@@ -653,7 +608,7 @@ class CuttingJobController {
                 remainingStock: currentStock.stock - item.pipeQty,
                 jobId: jobId,
                 organizationId: organization_id,
-                note: `Stock deducted for cutting job #${jobId}`
+                note: noteKarigar
               }
             });
             console.log(`[BACKEND CONTROLLER] Created stock transaction for item: ${item.id}`);

@@ -44,7 +44,16 @@ const {
   shopName,
   workerType,
   naginaName,
-  naginaSize
+  naginaSize,
+  
+  // Add cutting stock validation rules
+  size,
+  width,
+  naginaId,
+  quantity,
+  batchNumber,
+  transactionType,
+  note
 
 } = validationRules.default;
 
@@ -82,6 +91,15 @@ const checkInput = (method) => {
 
     case "fileUploads":
       return [images];
+      
+    case "add_cutting_stock":
+      return [size, color, width, naginaId, quantity, batchNumber];
+      
+    case "update_cutting_stock":
+      return [quantity, note];
+      
+    case "add_stock_transaction":
+      return [transactionType, quantity, note];
 
     default:
       return [];

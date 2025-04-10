@@ -265,6 +265,35 @@ class MasterController {
       res.status(500).json({ error: error.message });
     }
   }
+
+  static async FetchKarigar(req, res) {
+    try {
+      const search =
+        req.query.search && req.query.search !== "undefined"
+          ? req.query.search
+          : false;
+
+      const filter = {
+        organization: {
+          orgType: "KARIGAR",
+        },
+      };
+
+      if (search && search.trim() !== "") {
+        filter.OR = [
+          { fullName: { contains: search, mode: "insensitive" } },
+          { mobile: { contains: search, mode: "insensitive" } },
+        ];
+      }
+
+      const records = await MasterService.GetOnlineKarigar(filter);
+
+      res.success(records);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ error: error.message });
+    }
+  }
 }
 
 export default MasterController;
