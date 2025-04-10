@@ -15,7 +15,8 @@ class Pipejobmakerservice {
       completionDate: data.completionDate,
       note: data.note,
     };
-    obj.status = data.isOnlineWorker ? 0 : 1;
+    obj.status = data.isOnlineWorker ? 0 : 2;
+    obj.pipemakerstatus =  data.isOnlineWorker ? 0 : 1;
 
     data.isOnlineWorker
       ? (obj.workerOnline = { connect: { id: data.pipeMakerId } })
