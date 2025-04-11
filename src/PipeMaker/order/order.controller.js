@@ -1,13 +1,11 @@
 import Orderservice from "./order.service.js";
 
 class OrderController {
-
   static async getPipejobs(req, res) {
     try {
       const organization_id = req.user.id;
       const page = req.query.pageNo ? parseInt(req.query.pageNo, 10) : 1;
       let filter = req.query.filter ? JSON.parse(req.query.filter) : {};
-
 
       let cond = {
         workerOnlineId: organization_id,
@@ -15,6 +13,15 @@ class OrderController {
         isdeleted: 0,
         status: filter.status,
       };
+
+      if (filter.status === 0) {
+        (cond.status = 1), (cond.pipemakerstatus = { not: 1 });
+      }
+
+      if (filter.status === 1) {
+        cond.pipemakerstatus = 1;
+        cond.status = {in: [1, 2] };
+      }
 
       if (filter.dateRange && filter.dateRange.from && filter.dateRange.to) {
         cond.createdDate = {
@@ -60,9 +67,8 @@ class OrderController {
         };
       }
 
-      console.log(cond)
+  
       const records = await Orderservice.getAllPipejob(cond, page);
-      console.log(records)
 
       res.infintescroll(records, page);
     } catch (error) {
@@ -82,10 +88,40 @@ class OrderController {
     }
   }
 
+  static async updatepipemakerstatus(req, res) {
+    try {
+      const id = req.params.id;
+
+      const result = await Orderservice.updatejobstatus(id, {
+        pipemakerstatus: 1,
+        status: 2,
+      });
+
+      res.success(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async rejectpipemakerjob(req, res) {
+    try {
+      const id = req.params.id;
+      const body = req.getBody(["reason"]);
 
 
+      const result = await Orderservice.updatejobstatus(id, {
+        workernote: body.reason,
+        pipemakerstatus: 2,
 
+      });
 
+      res.success(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ error: error.message });
+    }
+  }
 }
 
 export default OrderController;

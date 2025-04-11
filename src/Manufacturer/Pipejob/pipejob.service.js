@@ -15,11 +15,8 @@ class Pipejobmakerservice {
       completionDate: data.completionDate,
       note: data.note,
     };
-    obj.status = 1;
-    //--------------------- check worker type ---------------------------------------//
-    // data.isOnlineWorker
-    //   ? (obj.workerOnlineId = data.pipeMakerId)
-    //   : (obj.workerOfflineId = data.pipeMakerId);
+    obj.status = data.isOnlineWorker ? 0 : 2;
+    obj.pipemakerstatus =  data.isOnlineWorker ? 0 : 1;
 
     data.isOnlineWorker
       ? (obj.workerOnline = { connect: { id: data.pipeMakerId } })
@@ -132,9 +129,26 @@ class Pipejobmakerservice {
     return await Prisma.$transaction(async (tx) => {
       const result = await tx.pipeItem.findUnique({
         where: { id },
+        include: {
+          job: {
+            include: {
+              workerOnline: {
+                include: {
+                  organization: true,
+                },
+              },
+              workerOffline: true,
+            },
+          },
+        },
       });
 
       if (!result) return null;
+
+      let pipemaker =
+        result.job.workerOnline.organization.orgName ||
+        result.job.workerOffline.shopName;
+
 
       const allpipeitem = await tx.pipeItem.findMany({
         where: { jobId: result.jobId },
@@ -147,6 +161,8 @@ class Pipejobmakerservice {
         (await this.totalRecievedPipe(allpipeitem)) + data.quantity;
 
       //---------------- build fresh object with add current recieved qty  ------///
+      delete result.job;
+
       const updatedData = await this.Findandupdateitem(
         result,
         data.color,
@@ -187,6 +203,8 @@ class Pipejobmakerservice {
         quantity: data.quantity,
         stockId: record.id,
         pipeStock: { connect: { id: record.id } },
+
+        note: `Recieved From ${pipemaker}`,
       };
 
       //-----------------------------------------------------------------------------------------------------------------//
@@ -206,7 +224,7 @@ class Pipejobmakerservice {
           totalPipeQty: totalrecieved,
         },
         data: {
-          status: 2,
+          status: 3,
         },
       });
 
@@ -251,6 +269,13 @@ class Pipejobmakerservice {
   }
 
   /////----------------------------------------------------------------------------/////
+
+  static async updatejobstatus(id, status) {
+    return await Prisma.pipeMakerJob.update({
+      where: { id },
+      data: { status: status },
+    });
+  }
 }
 
 export default Pipejobmakerservice;

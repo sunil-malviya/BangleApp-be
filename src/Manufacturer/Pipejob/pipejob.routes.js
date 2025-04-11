@@ -60,6 +60,15 @@ router.put(
 );
 
 
+router.put(
+  "/startjob/:id",
+
+  //   checkInput("add_design"),
+  //   showParametersErrors,
+
+  Pipecontroller.updatejobstatus
+);
+
 
 
 
