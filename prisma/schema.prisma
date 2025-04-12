@@ -25,7 +25,6 @@ model User {
   organization Organization?
   pipeMakerJobs PipeMakerJob[] @relation("WorkerOnlineRelation")
   cuttingKarigarJobs CuttingKarigarJob[]
-  cuttingKarigarJobs CuttingKarigarJob[]
 }
 
 model Organization {
@@ -116,6 +115,7 @@ enum worktype {
   Offline
   
 }
+
 model PipeMakerJob {
   id              String      @id @default(uuid())
 
@@ -136,7 +136,7 @@ model PipeMakerJob {
   totalitem       Int
   pipeItems       PipeItem[]
   materialDetails Json
-  status          Int   //  -  1 pending  2 completed  0 draft 3 progress
+  status          Int   //  - 0 draft 1 pending  2 progress    3 completed 
   isdeleted       Int   @default(0) /// 1 = deleted and 0 not 
   pipemakerstatus Int   @default(0)   //---  1 accept  2 reject
   workernote      String?
@@ -196,7 +196,6 @@ model CuttingKarigarJob {
   organization     Organization @relation(fields: [organizationId], references: [id])
   workerStatus     worktype
   workerOnlineId   String?
-  workerOnline     User?         @relation(fields: [workerOnlineId], references: [id])
   workerOnline     User?         @relation(fields: [workerOnlineId], references: [id])
   workerOfflineId  String?
   workerOffline    Worker? @relation(fields: [workerOfflineId], references: [id])
@@ -261,18 +260,16 @@ model StockTransaction {
   updatedAt      DateTime         @updatedAt
   organizationId String?
   organization   Organization?    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  
+
 
   pipeStockId      String?
   pipeStock        PipeStock?       @relation(fields: [pipeStockId], references: [id], onDelete: Cascade)
 
   cuttingStockId   String?
   cuttingStock     CuttingStock?    @relation(fields: [cuttingStockId], references: [id], onDelete: Cascade)
+   
+  PipeWeight       Float?
 
-  
-
-  //pipeStock      PipeStock?       @relation(fields: [stockId], references: [id], onDelete: Cascade, map: "StockTransaction_pipeStock_fkey")
- // cuttingStock   CuttingStock?    @relation(fields: [stockId], references: [id], onDelete: Cascade, map: "StockTransaction_cuttingStock_fkey")
 
   @@index([stockId, stockType])
   @@index([transactionType])
@@ -292,6 +289,7 @@ model PipeStock {
   organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   cuttingItems   CuttingItem[]
   transactions   StockTransaction[]
+  PerPipeWeight  Float? 
   
   @@unique([organizationId, size, weight, color])
 }
@@ -305,9 +303,9 @@ model CuttingStock {
   nagina         Nagina             @relation(fields: [naginaId], references: [id])
   quantity       Int
   weight         String
+
   batchNumber    String?
   jobId          String?            // Reference to the cutting job that created this stock
-  CuttingKarigarJob CuttingKarigarJob? @relation(fields: [jobId], references: [id])     
   isdeleted      Int                @default(0) /// 1 = deleted and 0 not
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
