@@ -57,6 +57,7 @@ model Organization {
   pipeStocks PipeStock[]
   cuttingStocks CuttingStock[]
   stockTransactions StockTransaction[]
+  applicationSettings ApplicationSettings[]
 }
 
 enum OrganizationType {
@@ -313,4 +314,21 @@ model CuttingStock {
   transactions   StockTransaction[]
 
   @@unique([organizationId, size, color, width, naginaId])
+}
+
+model ApplicationSettings {
+     id             String        @id @default(uuid())
+     organizationId String
+     orgType        OrganizationType
+     settingsType   SettingsType
+     settings       Json?
+     organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+     isdeleted      Int           @default(0) /// 1 = deleted and 0 not  
+     createdAt      DateTime      @default(now())
+     updatedAt      DateTime      @updatedAt
+}
+
+enum SettingsType {
+  GENERAL
+  PDF
 }
