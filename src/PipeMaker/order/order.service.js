@@ -42,6 +42,23 @@ class Orderservice {
     });
   }
 
+
+  static async getRecentOrder(cond, limit = 3) {
+    return await Prisma.pipeMakerJob.findMany({
+      where: cond,
+      include: {
+        organization: true,
+        pipeItems: true,
+    
+      },
+      orderBy: {
+        createdDate: 'desc',
+      },
+      take: limit,
+    });
+  }
+
+
   /////----------------------------------------------------------------------------/////
 }
 

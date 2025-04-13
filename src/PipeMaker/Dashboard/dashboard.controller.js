@@ -19,6 +19,39 @@ class DashboardController {
     }
   }
 
+  static async FetchRecentActivity(req, res) {
+    try {
+      const id = req.user.id;
+  
+   
+      const limit =  3;
+  
+      const recentorder = await Orderservice.getRecentOrder(
+        {
+          workerOnlineId: id,
+          status: { in: [1,2] },
+        },
+        limit
+      );
+
+
+      const Productionstatus = await Orderservice.getRecentOrder(
+        {
+          workerOnlineId: id,
+          status: { in: [2] },
+        },
+        limit
+      );
+
+      console.log(Productionstatus)
+  
+      res.success({ recentorder ,Productionstatus});
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ error: error.message });
+    }
+  }
+  
 
 
 }

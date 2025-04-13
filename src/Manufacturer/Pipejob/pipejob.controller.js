@@ -14,6 +14,12 @@ class PipejobController {
         "note",
       ]);
 
+      const totalorder = await Orderservice.getOrdercount({
+        organizationId: organization_id,
+        status: { in: [1, 2, 3] },
+      });
+      body.jobNumber = totalorder + 1;
+
       const data = await PipejobService.Arrangedata(body, organization_id);
 
       const result = await PipejobService.createPipejob(data);
