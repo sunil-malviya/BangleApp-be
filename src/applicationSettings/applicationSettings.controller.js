@@ -39,6 +39,7 @@ class applicationSettingsController {
 
 
   static async updatePdfSettings(req, res) {
+    console.log('updatePdfSettings',req.user);
     const organizationId  = req.user.organization.id;
     const orgType = req.user.organization.orgType;
     const pdfSettingData  = req.body;
