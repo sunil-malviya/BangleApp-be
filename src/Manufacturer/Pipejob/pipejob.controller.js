@@ -19,10 +19,10 @@ class PipejobController {
         organizationId: organization_id,
         status: { in: [1, 2, 3] },
       });
-      body.jobNumber = totalorder + 1;
+     
 
       const data = await PipejobService.Arrangedata(body, organization_id);
-
+      data.jobNumber = totalorder + 1;
       const result = await PipejobService.createPipejob(data);
 
       res.success(result);

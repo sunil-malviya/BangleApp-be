@@ -43,7 +43,7 @@ class DashboardController {
         limit
       );
 
-      console.log(Productionstatus)
+
   
       res.success({ recentorder ,Productionstatus});
     } catch (error) {
