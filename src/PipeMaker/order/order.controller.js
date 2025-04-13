@@ -20,7 +20,7 @@ class OrderController {
 
       if (filter.status === 1) {
         cond.pipemakerstatus = 1;
-        cond.status = {in: [1, 2] };
+        cond.status = { in: [1, 2] };
       }
 
       if (filter.dateRange && filter.dateRange.from && filter.dateRange.to) {
@@ -67,7 +67,6 @@ class OrderController {
         };
       }
 
-  
       const records = await Orderservice.getAllPipejob(cond, page);
 
       res.infintescroll(records, page);
@@ -109,11 +108,9 @@ class OrderController {
       const id = req.params.id;
       const body = req.getBody(["reason"]);
 
-
       const result = await Orderservice.updatejobstatus(id, {
         workernote: body.reason,
         pipemakerstatus: 2,
-
       });
 
       res.success(result);

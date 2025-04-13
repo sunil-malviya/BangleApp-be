@@ -142,6 +142,7 @@ model PipeMakerJob {
   pipemakerstatus Int   @default(0)   //---  1 accept  2 reject
   workernote      String?
   note            String? @default("")
+  jobNumber       Int   @default(0) 
 
 }
 model PipeItem {
@@ -261,18 +262,16 @@ model StockTransaction {
   updatedAt      DateTime         @updatedAt
   organizationId String?
   organization   Organization?    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  
+
 
   pipeStockId      String?
   pipeStock        PipeStock?       @relation(fields: [pipeStockId], references: [id], onDelete: Cascade)
 
   cuttingStockId   String?
   cuttingStock     CuttingStock?    @relation(fields: [cuttingStockId], references: [id], onDelete: Cascade)
+   
+  PipeWeight       Float?
 
-  
-
-  //pipeStock      PipeStock?       @relation(fields: [stockId], references: [id], onDelete: Cascade, map: "StockTransaction_pipeStock_fkey")
- // cuttingStock   CuttingStock?    @relation(fields: [stockId], references: [id], onDelete: Cascade, map: "StockTransaction_cuttingStock_fkey")
 
   @@index([stockId, stockType])
   @@index([transactionType])
@@ -292,6 +291,7 @@ model PipeStock {
   organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   cuttingItems   CuttingItem[]
   transactions   StockTransaction[]
+  PerPipeWeight  Float? 
   
   @@unique([organizationId, size, weight, color])
 }
@@ -304,6 +304,8 @@ model CuttingStock {
   naginaId       String
   nagina         Nagina             @relation(fields: [naginaId], references: [id])
   quantity       Int
+  weight         String
+
   batchNumber    String?
   jobId          String?            // Reference to the cutting job that created this stock
   isdeleted      Int                @default(0) /// 1 = deleted and 0 not
