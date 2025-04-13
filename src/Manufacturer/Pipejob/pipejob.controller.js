@@ -1,4 +1,5 @@
 import PipejobService from "./pipejob.service.js";
+import Orderservice from "./../../PipeMaker/order/order.service.js";
 
 class PipejobController {
   static async createPipejob(req, res) {
@@ -14,8 +15,14 @@ class PipejobController {
         "note",
       ]);
 
-      const data = await PipejobService.Arrangedata(body, organization_id);
+      const totalorder = await Orderservice.getOrdercount({
+        organizationId: organization_id,
+        status: { in: [1, 2, 3] },
+      });
+     
 
+      const data = await PipejobService.Arrangedata(body, organization_id);
+      data.jobNumber = totalorder + 1;
       const result = await PipejobService.createPipejob(data);
 
       res.success(result);
