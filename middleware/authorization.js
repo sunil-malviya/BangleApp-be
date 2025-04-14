@@ -36,7 +36,7 @@ export default async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     try {
-      const User = await Prisma.user.findFirst({
+      const User = await Prisma.user.findUnique({
         where: {
           id: decoded.userId, // Ensure 'userId' matches your JWT payload key
         },

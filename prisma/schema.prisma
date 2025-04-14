@@ -315,7 +315,7 @@ model CuttingStock {
   organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   transactions   StockTransaction[]
 
-  @@unique([organizationId, size, color, width, naginaId])
+  @@unique([organizationId, size, color, width, naginaId, weight])
 }
 
 model ApplicationSettings {

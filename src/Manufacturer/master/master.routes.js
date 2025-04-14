@@ -66,14 +66,7 @@ router.delete("/nagina/:id",
   MasterController.deleteByIdNaginaMaster
 );
 
-
-
-
-
-
-
-
-
-
+// Define the new route for fetching online Karigars
+router.get("/online-karigar", MasterController.FetchKarigar);
 
 export default router;
