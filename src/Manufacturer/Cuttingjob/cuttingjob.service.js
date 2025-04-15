@@ -43,98 +43,86 @@ class CuttingJobService {
     console.log('[BACKEND SERVICE] Total pipes:', obj.totalPipeQty);
     console.log('[BACKEND SERVICE] Total bangles:', obj.totalAvgBangleQty);
     console.log('[BACKEND SERVICE] Total price:', obj.totalPrice);
-
+    delete obj.isOnlineWorker;
     return { obj, cuttingItems: data.cuttingItems };
   }
 
-  static async createCuttingJob(data) {
-    console.log('[BACKEND SERVICE] Creating cutting job in database...');
+  static async createCuttingJob(jobData) {
+    console.log('[BACKEND SERVICE] Creating cutting job');
     
-    return await Prisma.$transaction(async (tx) => {
-      console.log('[BACKEND SERVICE] Starting database transaction');
-      
-      // Verify pipe stock availability for all items before proceeding
-      console.log('[BACKEND SERVICE] Verifying stock availability for all items');
-      const stockCheckPromises = data.cuttingItems.map(async (item, index) => {
-        const pipeStock = await tx.pipeStock.findUnique({
-          where: { id: item.pipeStockId },
-          select: { id: true, stock: true, size: true, color: true, organizationId: true }
+    try {
+      return await Prisma.$transaction(async (tx) => {
+        console.log('[BACKEND SERVICE] Starting database transaction');
+        
+        // Get the organization ID from the job data
+        const organizationId = jobData.obj.organization.connect.id;
+        
+        // Generate job number - count existing jobs and increment
+        const jobCount = await tx.cuttingKarigarJob.count({
+          where: { 
+            organizationId,
+          }
         });
         
-        if (!pipeStock) {
-          throw new Error(`Pipe stock with ID ${item.pipeStockId} not found for item ${index + 1}`);
-        }
+        // Generate jobNumber as count + 1 (ensuring we never use 0)
+        const jobNumber = jobCount + 1;
+        console.log(`[BACKEND SERVICE] Generated job number: ${jobNumber}`);
         
-        if (pipeStock.stock < item.pipeQty) {
-          throw new Error(`Insufficient stock for item ${index + 1}. Requested: ${item.pipeQty}, Available: ${pipeStock.stock} for ${pipeStock.size} (${pipeStock.color})`);
-        }
+        // Create the cutting job with draft status
+        const job = await tx.cuttingKarigarJob.create({
+          data: {
+            status: 0, // Draft status
+            createdDate: jobData.obj.createdDate,
+            completionDate: jobData.obj.completionDate,
+            note: jobData.obj.note,
+            totalAvgBangleQty: jobData.obj.totalAvgBangleQty,
+            totalPipeQty: jobData.obj.totalPipeQty,
+            totalitem: jobData.obj.totalitem,
+            totalPrice: jobData.obj.totalPrice,
+            ...jobData.obj.workerOffline ? { workerOffline: jobData.obj.workerOffline } : {},
+            workerOnlineId: jobData.obj.workerOnlineId,
+            workerStatus: jobData.obj.workerStatus,
+            organization: jobData.obj.organization,
+            jobNumber, // Add the job number field
+          },
+        });
         
-        console.log(`[BACKEND SERVICE] Stock verified for item ${index + 1}: ${pipeStock.size} (${pipeStock.color}) - Requested: ${item.pipeQty}, Available: ${pipeStock.stock}`);
-        return { pipeStock, requestedQty: item.pipeQty };
+        console.log(`[BACKEND SERVICE] Created cutting job with ID: ${job.id} and job number: ${jobNumber}`);
+        
+        // Map cutting items
+        const mappedCuttingItems = jobData.cuttingItems.map((item) => ({
+          pipeStockId: item.pipeStockId,
+          pipeQty: item.pipeQty,
+          AvgBangleQty: item.AvgBangleQty || 0,
+          bangleWidth: item.bangleWidth,
+          naginaId: item.naginaId,
+          perPipeCuttingPrice: item.perPipeCuttingPrice,
+          totalItemBangles: item.totalItemBangles || (item.AvgBangleQty * item.pipeQty),
+          jobId: job.id,
+          receivedQty: 0, // Initialize receivedQty to 0 for new items
+        }));
+        
+        // Create cutting items in batch
+        console.log(`[BACKEND SERVICE] Creating ${mappedCuttingItems.length} cutting items`);
+        const cuttingItems = await tx.CuttingItem.createMany({
+          data: mappedCuttingItems,
+        });
+        
+        // Return job with the new items
+        const result = await tx.cuttingKarigarJob.findUnique({
+          where: { id: job.id },
+          include: {
+            cuttingItems: true,
+          },
+        });
+        
+        console.log('[BACKEND SERVICE] Database transaction completed successfully');
+        return result;
       });
-      
-      // Wait for all stock checks to complete
-      const stockCheckResults = await Promise.all(stockCheckPromises);
-      
-      // Create the cutting job
-      const result = await tx.cuttingKarigarJob.create({ data: data.obj });
-      console.log('[BACKEND SERVICE] Created cutting job with ID:', result.id);
-
-      // Create cutting items
-      const job_number = await tx.cuttingKarigarJob.count();
-      console.log('[BACKEND SERVICE] Organization job number count:', job_number);
-      
-      const cuttingItems = data.cuttingItems.map((item, index) => {
-        const mappedItem = {
-          ...item,
-          jobId: result.id,
-          receivedQty: 0,
-          receivedDate: null,
-          receivedLog: [],
-          // Calculate totalItemBangles if not provided
-          totalItemBangles: item.totalItemBangles || (item.AvgBangleQty * item.pipeQty)
-        };
-        
-        console.log(`[BACKEND SERVICE] Mapped cutting item ${index + 1}:`, 
-          `PipeStockId: ${mappedItem.pipeStockId}, `,
-          `PipeQty: ${mappedItem.pipeQty}, `,
-          `TotalItemBangles: ${mappedItem.totalItemBangles}`
-        );
-        
-        return mappedItem;
-      });
-
-      console.log('[BACKEND SERVICE] Creating', cuttingItems.length, 'cutting items');
-      await tx.cuttingItem.createMany({
-        data: cuttingItems,
-      });
-      
-      // Update pipe stock quantities using the StockTransactionUtil
-      console.log('[BACKEND SERVICE] Updating pipe stock quantities');
-      const stockUpdatePromises = stockCheckResults.map(async ({ pipeStock, requestedQty }) => {
-        // Create stock transaction and update stock
-        const transactionData = {
-          stockId: pipeStock.id,
-          stockType: 'PIPE',
-          transactionType: 'OUTWARD',
-          quantity: requestedQty,
-          note: `Used in cutting job #${result.id}`,
-          jobId: result.id,
-          organizationId: pipeStock.organizationId
-        };
-        
-        const updatedStockData = await StockTransactionUtil.updateStockWithTransaction(tx, transactionData);
-        
-        console.log(`[BACKEND SERVICE] Updated stock for pipe ${pipeStock.id}. Deducted: ${requestedQty}, Remaining: ${updatedStockData.stock.stock}`);
-        return updatedStockData;
-      });
-      
-      // Wait for all stock updates to complete
-      await Promise.all(stockUpdatePromises);
-
-      console.log('[BACKEND SERVICE] Transaction completed successfully');
-      return result;
-    });
+    } catch (error) {
+      console.error('[BACKEND SERVICE] Error creating cutting job:', error);
+      throw error;
+    }
   }
 
   static async getAllCuttingJobs(filters = {}, page = 1, pageSize = 5) {
@@ -145,6 +133,7 @@ class CuttingJobService {
       include: {
         organization: true,
         workerOffline: true,
+        workerOnline: true,
         cuttingItems: {
           include: {
             pipeStock: true,
@@ -175,35 +164,6 @@ class CuttingJobService {
     if (!result) {
       console.error('[BACKEND SERVICE] Job not found with ID:', id);
       return null;
-    }
-    
-    // Count jobs in this organization to get job number
-    if (result.organization && result.organization.id) {
-      try {
-        // For safety, check if the job has a creation date
-        if (!result.createdDate) {
-          console.warn('[BACKEND SERVICE] Job does not have createdDate field:', id);
-          result.jobNumber = 1; // Default to 1 if no creation date
-        } else {
-          const jobCount = await Prisma.cuttingKarigarJob.count({
-            where: { 
-              organizationId: result.organization.id,
-              createdDate: { lt: result.createdDate } // Use createdDate instead of createdAt
-            }
-          });
-          
-          // Add job number to the result
-          result.jobNumber = jobCount + 1;
-          console.log('[BACKEND SERVICE] Calculated job number for job:', result.jobNumber);
-        }
-      } catch (error) {
-        console.error('[BACKEND SERVICE] Error calculating job number:', error.message);
-        // Provide a fallback job number
-        result.jobNumber = 1;
-      }
-    } else {
-      console.warn('[BACKEND SERVICE] Could not determine organization for job number calculation');
-      result.jobNumber = 1; // Default to 1 if no organization
     }
     
     console.log('[BACKEND SERVICE] Found job with ID:', id);
@@ -348,8 +308,8 @@ class CuttingJobService {
           stockType: 'PIPE',
           transactionType: 'OUTWARD',
           quantity: requestedQty,
-          note: `Used in updated cutting job #${id}`,
-          jobId: id,
+          note: `CUT-JOB-${result.jobNumber} | Karigar: ${result.workerOffline?.fullName || 'Online Worker'} | Quantity: ${requestedQty} | Date: ${new Date().toLocaleDateString()}`,
+          jobId: result.id,
           organizationId: pipeStock.organizationId
         };
         
@@ -481,14 +441,16 @@ class CuttingJobService {
           const width = cuttingItem.bangleWidth;
           const naginaId = cuttingItem.naginaId;
           const organizationId = cuttingItem.job.organizationId;
+          const weight = cuttingItem.pipeStock.weight;
           
-          if (!size || !color || !width || !naginaId || !organizationId) {
+          if (!size || !color || !width || !naginaId || !organizationId || !weight) {
             console.error('[BACKEND SERVICE] Missing required properties for CuttingStock:', {
               size,
               color,
               width,
               naginaId,
-              organizationId
+              organizationId,
+              weight
             });
             throw new Error('Missing required properties for CuttingStock');
           }
@@ -499,7 +461,8 @@ class CuttingJobService {
             size,
             color,
             width,
-            naginaId
+            naginaId,
+            weight
           });
           
           const existingCuttingStock = await tx.cuttingStock.findFirst({
@@ -509,6 +472,7 @@ class CuttingJobService {
               color,
               width,
               naginaId,
+              weight,
               isdeleted: 0
             }
           });
@@ -535,13 +499,14 @@ class CuttingJobService {
             console.log('[BACKEND SERVICE] Creating new cutting stock');
             
             // Generate batch number based on current date and job ID
-            const batchNumber = `CUT-${new Date().toISOString().substring(0, 10)}-${cuttingItem.jobId.substring(0, 6)}`;
+            const batchNumber = `CUT-Bangle-${new Date().toISOString().slice(0, 10)}-${cuttingItem.jobId}`;
             
             cuttingStock = await tx.cuttingStock.create({
               data: {
                 size,
                 color,
                 width,
+                weight,
                 naginaId,
                 quantity: data.quantity,
                 batchNumber,
@@ -562,7 +527,7 @@ class CuttingJobService {
                 transactionType,
                 quantity: data.quantity,
                 remainingStock: cuttingStock.quantity,
-                note: `Received from cutting job #${cuttingItem.jobId}`,
+                note: `stock received from cutting job CUT-JOB-${cuttingItem.job.jobNumber}`,
                 jobId: cuttingItem.jobId,
                 organizationId
               }
@@ -643,6 +608,88 @@ class CuttingJobService {
     
     console.log(`[BACKEND SERVICE] Found ${transactions.length} transactions for stock ID ${stockId}`);
     return transactions;
+  }
+
+  static async startCuttingJob(jobId) {
+    console.log('[BACKEND SERVICE] Starting cutting job:', jobId);
+    
+    return await Prisma.$transaction(async (tx) => {
+      console.log('[BACKEND SERVICE] Starting database transaction');
+      
+      // Get the job and its items
+      const job = await tx.cuttingKarigarJob.findUnique({
+        where: { id: jobId },
+        include: {
+          cuttingItems: true
+        }
+      });
+
+      if (!job) {
+        throw new Error(`Cutting job with ID ${jobId} not found`);
+      }
+
+      if (job.status !== 0) {
+        throw new Error(`Job status must be draft (0) to start. Current status: ${job.status}`);
+      }
+
+      // Verify pipe stock availability for all items
+      console.log('[BACKEND SERVICE] Verifying stock availability for all items');
+      const stockCheckPromises = job.cuttingItems.map(async (item, index) => {
+        const pipeStock = await tx.pipeStock.findUnique({
+          where: { id: item.pipeStockId },
+          select: { id: true, stock: true, size: true, color: true, organizationId: true }
+        });
+        
+        if (!pipeStock) {
+          throw new Error(`Pipe stock with ID ${item.pipeStockId} not found for item ${index + 1}`);
+        }
+        
+        if (pipeStock.stock < item.pipeQty) {
+          throw new Error(`Insufficient stock for item ${index + 1}. Requested: ${item.pipeQty}, Available: ${pipeStock.stock} for ${pipeStock.size} (${pipeStock.color})`);
+        }
+        
+        console.log(`[BACKEND SERVICE] Stock verified for item ${index + 1}: ${pipeStock.size} (${pipeStock.color}) - Requested: ${item.pipeQty}, Available: ${pipeStock.stock}`);
+        return { pipeStock, requestedQty: item.pipeQty };
+      });
+
+      // Wait for all stock checks to complete
+      const stockCheckResults = await Promise.all(stockCheckPromises);
+
+      // Update pipe stock quantities
+      console.log('[BACKEND SERVICE] Updating pipe stock quantities');
+      const stockUpdatePromises = stockCheckResults.map(async ({ pipeStock, requestedQty }) => {
+        // Create stock transaction and update stock
+        const transactionData = {
+          stockId: pipeStock.id,
+          stockType: 'PIPE',
+          transactionType: 'OUTWARD',
+          quantity: requestedQty,
+          note: `CUT-JOB-${job.jobNumber} | Karigar: ${job.workerOffline?.fullName || 'Online Worker'} | Quantity: ${requestedQty} | Date: ${new Date().toLocaleDateString()}`,
+          jobId: job.id,
+          organizationId: pipeStock.organizationId
+        };
+        
+        const updatedStockData = await StockTransactionUtil.updateStockWithTransaction(tx, transactionData);
+        
+        console.log(`[BACKEND SERVICE] Updated stock for pipe ${pipeStock.id}. Deducted: ${requestedQty}, Remaining: ${updatedStockData.stock.stock}`);
+        return updatedStockData;
+      });
+
+      // Wait for all stock updates to complete
+      await Promise.all(stockUpdatePromises);
+
+      // Update job status to in-progress
+      const updatedJob = await tx.cuttingKarigarJob.update({
+        where: { id: jobId },
+        data: { status: 1 }, // Set status to in-progress
+        include: {
+          cuttingItems: true
+        }
+      });
+
+      console.log('[BACKEND SERVICE] Job started successfully');
+      return updatedJob;
+    });
   }
 }
 
