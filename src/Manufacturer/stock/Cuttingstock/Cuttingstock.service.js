@@ -44,7 +44,13 @@ class CuttingStockService {
       let cuttingStocks = await Prisma.cuttingStock.findMany({
         where: whereCondition,
         include: {
-          nagina: true, // Include Nagina details
+          nagina: {
+            select: {
+              id: true,
+              naginaName: true,
+              naginaSize: true
+            }
+          },
           transactions: { // Include recent transactions
             orderBy: { createdAt: 'desc' },
             take: DEFAULT_LIST_TRANSACTION_TAKE,
@@ -52,19 +58,94 @@ class CuttingStockService {
           _count: { // Include total transaction count
             select: { transactions: true },
           },
-          // Include CuttingKarigarJob directly if jobId exists
-          // This relies on Prisma's efficient relation loading
-          CuttingKarigarJob: {
-             include: {
-                workerOffline: { select: { fullName: true, mobile: true } },
-                workerOnline: { select: { fullName: true, mobile: true } }
-             }
-          }
+          organization: true // Include organization details
         },
         orderBy: { updatedAt: 'desc' },
         skip,
         take: pageSize,
       });
+
+      // Process the results to include formatted details
+      cuttingStocks = cuttingStocks.map(stock => {
+        return {
+          ...stock,
+          formattedDetails: {
+            size: stock.size,
+            color: stock.color,
+            width: `${stock.width} cm`,
+            weight: `${stock.weight} gm`,
+            nagina: stock.nagina ? {
+              name: stock.nagina.naginaName,
+              size: stock.nagina.naginaSize
+            } : null,
+            quantity: stock.quantity,
+            bangleType: stock.bangleType
+          }
+        };
+      });
+
+      // Fetch job details for stocks that have jobId
+      const stocksWithJobIds = cuttingStocks.filter(stock => stock.jobId);
+      if (stocksWithJobIds.length > 0) {
+        const jobIds = stocksWithJobIds.map(stock => stock.jobId);
+        const jobs = await Prisma.cuttingKarigarJob.findMany({
+          where: {
+            id: { in: jobIds }
+          },
+          include: {
+            workerOnline: {
+              select: {
+                id: true,
+                fullName: true,
+                mobile: true,
+                email: true
+              }
+            },
+            workerOffline: {
+              select: {
+                id: true,
+                fullName: true,
+                mobile: true,
+                address: true,
+                shopName: true
+              }
+            }
+          }
+        });
+
+        // Create a map of jobId to job details
+        const jobMap = jobs.reduce((acc, job) => {
+          acc[job.id] = job;
+          return acc;
+        }, {});
+
+        // Process the results to include worker details based on workerStatus
+        cuttingStocks = cuttingStocks.map(stock => {
+          if (stock.jobId && jobMap[stock.jobId]) {
+            const job = jobMap[stock.jobId];
+            const workerDetails = job.workerStatus === 'Online' 
+              ? job.workerOnline 
+              : job.workerOffline;
+            
+            return {
+              ...stock,
+              workerDetails: workerDetails ? {
+                id: workerDetails.id,
+                name: workerDetails.fullName,
+                mobile: workerDetails.mobile,
+                type: job.workerStatus,
+                ...(job.workerStatus === 'Offline' ? {
+                  address: workerDetails.address,
+                  shopName: workerDetails.shopName
+                } : {
+                  email: workerDetails.email
+                })
+              } : null
+            };
+          }
+          return stock;
+        });
+      }
       
       // Return raw data - formatting should happen in controller or frontend
       return {
@@ -92,7 +173,13 @@ class CuttingStockService {
           isdeleted: IS_DELETED_FALSE,
         },
         include: {
-          nagina: true,
+          nagina: {
+            select: {
+              id: true,
+              naginaName: true,
+              naginaSize: true
+            }
+          },
           transactions: { // Include more transactions for detail view
             orderBy: { createdAt: 'desc' },
             take: DEFAULT_TRANSACTION_TAKE,
@@ -100,25 +187,82 @@ class CuttingStockService {
           _count: {
             select: { transactions: true },
           },
-          // Include job details directly
-          CuttingKarigarJob: {
-             include: {
-                workerOffline: { select: { fullName: true, mobile: true } },
-                workerOnline: { select: { fullName: true, mobile: true } }
-             }
-          }
+          organization: true // Include organization details
         },
       });
 
       if (!stock) {
-        // Use a specific error type or message for not found
         const error = new Error("Cutting stock not found.");
-        error.statusCode = 404; // Attach status code for controller
+        error.statusCode = 404;
         throw error;
       }
 
-      // Return raw stock data
-      return stock;
+      // Add formatted details
+      const stockWithFormattedDetails = {
+        ...stock,
+        formattedDetails: {
+          size: stock.size,
+          color: stock.color,
+          width: `${stock.width} cm`,
+          weight: `${stock.weight} gm`,
+          nagina: stock.nagina ? {
+            name: stock.nagina.naginaName,
+            size: stock.nagina.naginaSize
+          } : null,
+          quantity: stock.quantity,
+          bangleType: stock.bangleType
+        }
+      };
+
+      // If stock has a jobId, fetch the job details
+      if (stock.jobId) {
+        const job = await Prisma.cuttingKarigarJob.findUnique({
+          where: { id: stock.jobId },
+          include: {
+            workerOnline: {
+              select: {
+                id: true,
+                fullName: true,
+                mobile: true,
+                email: true
+              }
+            },
+            workerOffline: {
+              select: {
+                id: true,
+                fullName: true,
+                mobile: true,
+                address: true,
+                shopName: true
+              }
+            }
+          }
+        });
+
+        if (job) {
+          const workerDetails = job.workerStatus === 'Online' 
+            ? job.workerOnline 
+            : job.workerOffline;
+          
+          return {
+            ...stockWithFormattedDetails,
+            workerDetails: workerDetails ? {
+              id: workerDetails.id,
+              name: workerDetails.fullName,
+              mobile: workerDetails.mobile,
+              type: job.workerStatus,
+              ...(job.workerStatus === 'Offline' ? {
+                address: workerDetails.address,
+                shopName: workerDetails.shopName
+              } : {
+                email: workerDetails.email
+              })
+            } : null
+          };
+        }
+      }
+
+      return stockWithFormattedDetails;
     } catch (error) {
       console.error(`Error fetching cutting stock by ID ${stockId}:`, error);
       if (error.statusCode === 404) throw error; // Re-throw specific errors

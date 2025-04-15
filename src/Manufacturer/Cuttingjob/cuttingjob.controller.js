@@ -4,7 +4,7 @@ import  Prisma  from "../../../db/prisma.js";
 class CuttingJobController {
   static async createCuttingJob(req, res) {
     try {
-      console.log('[BACKEND CONTROLLER] Create Cutting Job - Request received');
+      console.log('[BACKEND CONTROLLER] Create Cutting Job - Request received with body:', req.body);
       
       const organization_id = req.user.organization.id;
       const body = req.getBody([
@@ -52,6 +52,7 @@ console.log('[BACKEND CONTROLLER] Body:', req.body);
             cleanedItem.totalItemBangles = (cleanedItem.AvgBangleQty || 0) * (cleanedItem.pipeQty || 0);
             console.log(`[BACKEND CONTROLLER] Calculated totalItemBangles for item ${index + 1}:`, cleanedItem.totalItemBangles);
           }
+          
           return cleanedItem;
         });
       } catch (validationError) {
@@ -425,10 +426,6 @@ console.log('[BACKEND CONTROLLER] Body:', req.body);
 
   static async getPipeStocks(req, res) {
     try {
-      console.log("[DEBUG] getPipeStocks controller method START");
-      console.log("[DEBUG] Request query:", req.query);
-      console.log("[DEBUG] Request user:", req.user?.organization?.id);
-      
       const organization_id = req.user.organization.id;
       const filters = req.query.filters ? JSON.parse(req.query.filters) : {};
       
@@ -436,25 +433,6 @@ console.log('[BACKEND CONTROLLER] Body:', req.body);
       let result = await CuttingJobService.getPipeStocks(organization_id, filters);
       
       // If no data from database, return test data
-      if (!result || result.length === 0) {
-        console.log("[DEBUG] No data from database, returning test data");
-        result = [
-          { 
-            id: "test1", 
-            size: "12mm",
-            color: "Red",
-            quantity: 10,
-            organizationId: organization_id 
-          },
-          { 
-            id: "test2", 
-            size: "15mm",
-            color: "Blue",
-            quantity: 15,
-            organizationId: organization_id 
-          }
-        ];
-      }
       
       console.log("[DEBUG] Pipe stocks result:", result ? "Data found" : "No data");
       console.log("[DEBUG] Sending response with type:", typeof result, "and length:", Array.isArray(result) ? result.length : "N/A");

@@ -23,7 +23,7 @@ class CuttingJobService {
       ? (obj.workerStatus = "Online")
       : (obj.workerStatus = "Offline");
 
-    console.log('[BACKEND SERVICE] Worker type:', data.isOnlineWorker ? 'Online' : 'Offline');
+    console.log('[BACKEND SERVICE] Worker status:', data.workerStatus);
     console.log('[BACKEND SERVICE] Worker ID:', data.karigarId);
 
     // Calculate totals
@@ -39,20 +39,13 @@ class CuttingJobService {
     
     obj.totalPrice = data.cuttingItems.reduce((total, item) => total + (item.pipeQty * item.perPipeCuttingPrice), 0);
 
-    console.log('[BACKEND SERVICE] Total items:', obj.totalitem);
-    console.log('[BACKEND SERVICE] Total pipes:', obj.totalPipeQty);
-    console.log('[BACKEND SERVICE] Total bangles:', obj.totalAvgBangleQty);
-    console.log('[BACKEND SERVICE] Total price:', obj.totalPrice);
-    delete obj.isOnlineWorker;
     return { obj, cuttingItems: data.cuttingItems };
   }
 
   static async createCuttingJob(jobData) {
-    console.log('[BACKEND SERVICE] Creating cutting job');
     
     try {
       return await Prisma.$transaction(async (tx) => {
-        console.log('[BACKEND SERVICE] Starting database transaction');
         
         // Get the organization ID from the job data
         const organizationId = jobData.obj.organization.connect.id;
@@ -66,7 +59,6 @@ class CuttingJobService {
         
         // Generate jobNumber as count + 1 (ensuring we never use 0)
         const jobNumber = jobCount + 1;
-        console.log(`[BACKEND SERVICE] Generated job number: ${jobNumber}`);
         
         // Create the cutting job with draft status
         const job = await tx.cuttingKarigarJob.create({
@@ -87,8 +79,6 @@ class CuttingJobService {
           },
         });
         
-        console.log(`[BACKEND SERVICE] Created cutting job with ID: ${job.id} and job number: ${jobNumber}`);
-        
         // Map cutting items
         const mappedCuttingItems = jobData.cuttingItems.map((item) => ({
           pipeStockId: item.pipeStockId,
@@ -100,6 +90,7 @@ class CuttingJobService {
           totalItemBangles: item.totalItemBangles || (item.AvgBangleQty * item.pipeQty),
           jobId: job.id,
           receivedQty: 0, // Initialize receivedQty to 0 for new items
+          unit: item.unit || 'mm', // Include the unit field with a default of 'mm'
         }));
         
         // Create cutting items in batch
