@@ -142,7 +142,7 @@ model PipeMakerJob {
   pipemakerstatus Int   @default(0)   //---  1 accept  2 reject
   workernote      String?
   note            String? @default("")
-  jobNumber       Int   @default(0)  
+  jobNumber       Int   @default(0) 
 
 }
 model PipeItem {

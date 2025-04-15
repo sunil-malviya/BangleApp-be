@@ -1,8 +1,6 @@
 import Prisma from "./../../../db/prisma.js";
 
 class Orderservice {
-
-
   static async getAllPipejob(filters = {}, page = 1, pageSize = 5) {
     return await Prisma.pipeMakerJob.findMany({
       where: filters,
@@ -31,16 +29,32 @@ class Orderservice {
     });
   }
 
-
-
-
-
-
+  static async getOrdercount(cond) {
+    return await Prisma.pipeMakerJob.count({
+      where: cond,
+    });
+  }
 
   static async updatejobstatus(id, data) {
     return await Prisma.pipeMakerJob.update({
       where: { id },
-      data:data ,
+      data: data,
+    });
+  }
+
+
+  static async getRecentOrder(cond, limit = 3) {
+    return await Prisma.pipeMakerJob.findMany({
+      where: cond,
+      include: {
+        organization: true,
+        pipeItems: true,
+    
+      },
+      orderBy: {
+        createdDate: 'desc',
+      },
+      take: limit,
     });
   }
 
