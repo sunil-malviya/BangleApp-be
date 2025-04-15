@@ -143,12 +143,23 @@ class Pipejobmakerservice {
         },
       });
 
-      if (!result) return null;
+      if (!result) {
+        throw new Error('Pipe item not found');
+      }
 
-      let pipemaker =
-        result.job.workerOnline.organization.orgName ||
-        result.job.workerOffline.shopName;
+      if (!result.job) {
+        throw new Error('Associated job not found');
+      }
 
+      // Determine the pipemaker name based on worker type
+      let pipemaker;
+      if (result.job.workerStatus === 'Online' && result.job.workerOnline?.organization) {
+        pipemaker = result.job.workerOnline.organization.orgName;
+      } else if (result.job.workerStatus === 'Offline' && result.job.workerOffline) {
+        pipemaker = result.job.workerOffline.shopName;
+      } else {
+        throw new Error('Invalid worker configuration');
+      }
 
       const allpipeitem = await tx.pipeItem.findMany({
         where: { jobId: result.jobId },
@@ -157,10 +168,9 @@ class Pipejobmakerservice {
         },
       });
 
-      const totalrecieved =
-        (await this.totalRecievedPipe(allpipeitem)) + data.quantity;
+      const totalrecieved = (await this.totalRecievedPipe(allpipeitem)) + data.quantity;
 
-      //---------------- build fresh object with add current recieved qty  ------///
+      // Build fresh object with add current received qty
       delete result.job;
 
       const updatedData = await this.Findandupdateitem(
@@ -170,7 +180,9 @@ class Pipejobmakerservice {
         data.newLog
       );
 
-      if (!updatedData) return null;
+      if (!updatedData) {
+        throw new Error('Failed to update item data');
+      }
 
       const record = await tx.PipeStock.upsert({
         where: {
@@ -195,7 +207,6 @@ class Pipejobmakerservice {
 
       let transdata = {
         stockType: "PIPE",
-
         transactionType: "INWARD",
         organization: { connect: { id: data.organization_id } },
         jobId: result.jobId,
@@ -203,15 +214,10 @@ class Pipejobmakerservice {
         quantity: data.quantity,
         stockId: record.id,
         pipeStock: { connect: { id: record.id } },
-
-        note: `Recieved From ${pipemaker}`,
+        note: `Received From ${pipemaker}`,
       };
 
-      //-----------------------------------------------------------------------------------------------------------------//
-
       await tx.StockTransaction.create({ data: transdata });
-
-      //------------------------------------------------------------------------------------------------------------------//
 
       await tx.pipeItem.update({
         where: { id },

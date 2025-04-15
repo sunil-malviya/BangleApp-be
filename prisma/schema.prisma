@@ -93,7 +93,7 @@ model Design{
 model Worker {
   id             String        @id @default(uuid())
   fullName       String
-  mobile         String        @unique
+  mobile         String      
   address        String
   shopName       String
   workerType     workerType
@@ -217,7 +217,7 @@ model CuttingKarigarJob {
 model CuttingItem {
   id               String        @id @default(uuid())
   jobId            String
-  job              CuttingKarigarJob @relation(fields: [jobId], references: [id])
+  job              CuttingKarigarJob @relation(fields: [jobId], references: [id],onDelete: Cascade)
   pipeStockId      String
   pipeStock        PipeStock     @relation(fields: [pipeStockId], references: [id])
   pipeQty          Int
@@ -230,6 +230,7 @@ model CuttingItem {
   receivedQty      Int
   receivedDate     DateTime?
   receivedLog      Json?
+  unit            Unit
   totalItemBangles Int           @default(0)
 }
 
@@ -247,6 +248,20 @@ enum TransactionType {
   OUTWARD
   ADJUSTMENT
   RETURN
+}
+
+enum Unit {
+  kg
+  gm
+  mtr
+  m
+  m2
+  m3
+  pcs
+  mm
+  inch
+  cm 
+  ft
 }
 
 model StockTransaction {

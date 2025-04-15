@@ -272,10 +272,29 @@ class MasterController {
         req.query.search && req.query.search !== "undefined"
           ? req.query.search
           : false;
+          
+      const workerType =
+        req.query.workerType && req.query.workerType !== "undefined"
+          ? req.query.workerType
+          : null;
+
+
+          const getBackendWorkerType = () => {
+            switch (workerType) {
+              case 'CUTTING_KARIGAR':
+                return 'KARIGAR';
+              case 'PIPE_MAKER':
+                return 'PIPEMAKER';
+              case 'NAGINA_AGENT':
+                return 'AGENT';
+              default:
+                return '';
+            }
+          };
 
       const filter = {
         organization: {
-          orgType: "KARIGAR",
+          orgType: getBackendWorkerType(),
         },
       };
 
@@ -284,6 +303,11 @@ class MasterController {
           { fullName: { contains: search, mode: "insensitive" } },
           { mobile: { contains: search, mode: "insensitive" } },
         ];
+      }
+      
+      // Filter by worker type if provided
+      if (workerType) {
+        filter.workerType = workerType;
       }
 
       const records = await MasterService.GetOnlineKarigar(filter);
