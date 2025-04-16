@@ -183,6 +183,22 @@ model Pipesize {
      updatedAt      DateTime      @updatedAt
 }
 
+
+model PipeWeight {
+     id             String        @id @default(uuid())
+     label          String
+     value          String      
+     order          Int
+     isdeleted      Int           @default(0) /// 1 = deleted and 0 not  
+     createdAt      DateTime      @default(now())
+     updatedAt      DateTime      @updatedAt
+}
+
+
+
+
+
+
 model Color {
      id             String        @id @default(uuid())
      name           String
@@ -298,6 +314,7 @@ model PipeStock {
   size           String
   weight         String
   color          String
+  colorcode      String             @default("dddddd")
   stock          Int
   isdeleted      Int                @default(0) /// 1 = deleted and 0 not
   createdAt      DateTime           @default(now())
