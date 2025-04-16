@@ -186,6 +186,53 @@ const validationRules = {
       );
     })
     .withMessage("Please Upload Image having Format: jpg, png, and jpeg."),
+
+  // Cutting Stock validation rules
+  size: body("size")
+    .exists()
+    .withMessage("Size is required")
+    .notEmpty()
+    .withMessage("Size cannot be empty"),
+    
+  color: body("color")
+    .exists()
+    .withMessage("Color is required")
+    .notEmpty()
+    .withMessage("Color cannot be empty"),
+    
+  width: body("width")
+    .exists()
+    .withMessage("Width is required")
+    .isFloat({ gt: 0 })
+    .withMessage("Width must be a number greater than 0"),
+    
+  naginaId: body("naginaId")
+    .exists()
+    .withMessage("Nagina ID is required")
+    .notEmpty()
+    .withMessage("Nagina ID cannot be empty"),
+    
+  quantity: body("quantity")
+    .exists()
+    .withMessage("Quantity is required")
+    .isInt({ gt: 0 })
+    .withMessage("Quantity must be a whole number greater than 0"),
+    
+  batchNumber: body("batchNumber")
+    .optional()
+    .isString()
+    .withMessage("Batch number must be a string"),
+    
+  transactionType: body("transactionType")
+    .exists()
+    .withMessage("Transaction type is required")
+    .isIn(["INWARD", "OUTWARD", "ADJUSTMENT", "RETURN"])
+    .withMessage("Transaction type must be one of: INWARD, OUTWARD, ADJUSTMENT, RETURN"),
+    
+  note: body("note")
+    .optional()
+    .isString()
+    .withMessage("Note must be a string"),
 };
 
 export default validationRules;

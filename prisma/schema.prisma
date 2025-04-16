@@ -93,7 +93,7 @@ model Design{
 model Worker {
   id             String        @id @default(uuid())
   fullName       String
-  mobile         String        @unique
+  mobile         String      
   address        String
   shopName       String
   workerType     workerType
@@ -183,6 +183,22 @@ model Pipesize {
      updatedAt      DateTime      @updatedAt
 }
 
+
+model PipeWeight {
+     id             String        @id @default(uuid())
+     label          String
+     value          String      
+     order          Int
+     isdeleted      Int           @default(0) /// 1 = deleted and 0 not  
+     createdAt      DateTime      @default(now())
+     updatedAt      DateTime      @updatedAt
+}
+
+
+
+
+
+
 model Color {
      id             String        @id @default(uuid())
      name           String
@@ -217,7 +233,7 @@ model CuttingKarigarJob {
 model CuttingItem {
   id               String        @id @default(uuid())
   jobId            String
-  job              CuttingKarigarJob @relation(fields: [jobId], references: [id])
+  job              CuttingKarigarJob @relation(fields: [jobId], references: [id],onDelete: Cascade)
   pipeStockId      String
   pipeStock        PipeStock     @relation(fields: [pipeStockId], references: [id])
   pipeQty          Int
@@ -230,6 +246,7 @@ model CuttingItem {
   receivedQty      Int
   receivedDate     DateTime?
   receivedLog      Json?
+  unit            Unit
   totalItemBangles Int           @default(0)
 }
 
@@ -247,6 +264,20 @@ enum TransactionType {
   OUTWARD
   ADJUSTMENT
   RETURN
+}
+
+enum Unit {
+  kg
+  gm
+  mtr
+  m
+  m2
+  m3
+  pcs
+  mm
+  inch
+  cm 
+  ft
 }
 
 model StockTransaction {
@@ -283,6 +314,7 @@ model PipeStock {
   size           String
   weight         String
   color          String
+  colorcode      String             @default("dddddd")
   stock          Int
   isdeleted      Int                @default(0) /// 1 = deleted and 0 not
   createdAt      DateTime           @default(now())
@@ -315,7 +347,7 @@ model CuttingStock {
   organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   transactions   StockTransaction[]
 
-  @@unique([organizationId, size, color, width, naginaId])
+  @@unique([organizationId, size, color, width, naginaId, weight])
 }
 
 model ApplicationSettings {

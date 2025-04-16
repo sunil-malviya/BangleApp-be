@@ -18,6 +18,7 @@ import GeneralRoutes from "./src/General/index.js"
 import {responseHandler} from './utils/apiResponse.js'
 import helperRouter from './src/helper/index.js'
 import custommethod from "./middleware/validator/customMethods.js";
+import applicationSettingsRoutes from './src/applicationSettings/index.js';
 
 // ---------------------------------------------------------------------
 // Recreate __dirname in ESM
@@ -74,6 +75,8 @@ app.use('/manufacturer', manufacturerRouter);
 app.use('/pipeMaker', pipeMakerRouter);
 app.use('/general', GeneralRoutes);
 app.use('/api/helper',helperRouter)
+app.use('/application-settings', applicationSettingsRoutes);
+
 
 
 

@@ -45,6 +45,7 @@ class Pipejobmakerservice {
 
   static async createPipejob(data) {
     return await Prisma.$transaction(async (tx) => {
+      console.log("data", data);
       const result = await tx.pipeMakerJob.create({ data: data.obj });
 
       data.updatedPipeItems.forEach((item) => {
@@ -143,7 +144,9 @@ class Pipejobmakerservice {
         },
       });
 
-      if (!result) return null;
+      if (!result) {
+        throw new Error('Pipe item not found');
+      }
 
       if (data.quantity > result.total_qty) {
         throw new Error(
@@ -162,11 +165,9 @@ class Pipejobmakerservice {
         },
       });
 
-      const totalrecieved =
-        (await this.totalRecievedPipe(allpipeitem)) + data.quantity;
+      const totalrecieved = (await this.totalRecievedPipe(allpipeitem)) + data.quantity;
 
-      //---------------- build fresh object with add current recieved qty ------------------- --------///
-
+      // Build fresh object with add current received qty
       delete result.job;
 
       const updatedData = await this.Findandupdateitem(
@@ -176,7 +177,9 @@ class Pipejobmakerservice {
         data.newLog
       );
 
-      if (!updatedData) return null;
+      if (!updatedData) {
+        throw new Error('Failed to update item data');
+      }
 
       const record = await tx.PipeStock.upsert({
         where: {
@@ -194,6 +197,7 @@ class Pipejobmakerservice {
           size: result.size,
           weight: result.weight,
           color: data.color,
+          colorcode: data.colorcode,
           stock: data.quantity,
           organization: { connect: { id: data.organization_id } },
         },
@@ -201,7 +205,6 @@ class Pipejobmakerservice {
 
       let transdata = {
         stockType: "PIPE",
-
         transactionType: "INWARD",
         organization: { connect: { id: data.organization_id } },
         jobId: result.jobId,
@@ -209,15 +212,10 @@ class Pipejobmakerservice {
         quantity: data.quantity,
         stockId: record.id,
         pipeStock: { connect: { id: record.id } },
-
-        note: `Recieved From ${pipemaker}`,
+        note: `Received From ${pipemaker}`,
       };
 
-      //-----------------------------------------------------------------------------------------------------------------//
-
       await tx.StockTransaction.create({ data: transdata });
-
-      //------------------------------------------------------------------------------------------------------------------//
 
       await tx.pipeItem.update({
         where: { id },
