@@ -4,7 +4,6 @@ class MasterController {
   // ------------------------worker master-----------------------------------
 
   static async createWorkerMaster(req, res) {
-    console.log("body data=", req.body);
     try {
       const body = req.getBody([
         "fullName",
@@ -158,7 +157,7 @@ class MasterController {
         req.query.search && req.query.search !== "undefined"
           ? req.query.search
           : false;
-      console.log(organizationId, naginaMasterId, search);
+
       let condition = { organizationId };
       if (naginaMasterId) {
         condition.id = naginaMasterId;

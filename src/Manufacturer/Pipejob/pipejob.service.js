@@ -16,7 +16,7 @@ class Pipejobmakerservice {
       note: data.note,
     };
     obj.status = data.isOnlineWorker ? 0 : 2;
-    obj.pipemakerstatus =  data.isOnlineWorker ? 0 : 1;
+    obj.pipemakerstatus = data.isOnlineWorker ? 0 : 1;
 
     data.isOnlineWorker
       ? (obj.workerOnline = { connect: { id: data.pipeMakerId } })
@@ -145,10 +145,15 @@ class Pipejobmakerservice {
 
       if (!result) return null;
 
+      if (data.quantity > result.total_qty) {
+        throw new Error(
+          `Quantity (${data.quantity}) exceeds available total quantity (${result.total_qty}).`
+        );
+      }
+
       let pipemaker =
         result.job.workerOnline.organization.orgName ||
         result.job.workerOffline.shopName;
-
 
       const allpipeitem = await tx.pipeItem.findMany({
         where: { jobId: result.jobId },
@@ -160,7 +165,8 @@ class Pipejobmakerservice {
       const totalrecieved =
         (await this.totalRecievedPipe(allpipeitem)) + data.quantity;
 
-      //---------------- build fresh object with add current recieved qty  ------///
+      //---------------- build fresh object with add current recieved qty ------------------- --------///
+
       delete result.job;
 
       const updatedData = await this.Findandupdateitem(

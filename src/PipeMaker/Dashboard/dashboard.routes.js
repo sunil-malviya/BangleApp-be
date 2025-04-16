@@ -14,16 +14,10 @@ router.get(
   dashboardontroller.FetchDashboard
 );
 
-
 router.get(
-    "/recentactivity",
-  
-    dashboardontroller.FetchRecentActivity
-  );
-  
+  "/recentactivity",
 
-
-
-
+  dashboardontroller.FetchRecentActivity
+);
 
 export default router;
