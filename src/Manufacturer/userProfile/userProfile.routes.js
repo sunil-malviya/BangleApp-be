@@ -73,4 +73,14 @@ router.put(
   userProfileController.updateUserProfile
 );
 
+router.put(
+  "/manufacturer-profile",
+  tokenvalidate, 
+  uploader.single("image"), 
+  // checkInput("add_design"),
+  // showParametersErrors,
+  userProfileController.updateManufacturerProfile
+);
+
+
 export default router;

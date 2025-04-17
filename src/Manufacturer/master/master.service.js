@@ -125,6 +125,7 @@ class MasterService {
     console.log(cond)
   return await Prisma.user.findMany({
       where:cond,
+    
       include: {
         organization: true, 
       },
