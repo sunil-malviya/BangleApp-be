@@ -4,7 +4,6 @@ class MasterController {
   // ------------------------worker master-----------------------------------
 
   static async createWorkerMaster(req, res) {
-    console.log("body data=", req.body);
     try {
       const body = req.getBody([
         "fullName",
@@ -158,7 +157,7 @@ class MasterController {
         req.query.search && req.query.search !== "undefined"
           ? req.query.search
           : false;
-      console.log(organizationId, naginaMasterId, search);
+
       let condition = { organizationId };
       if (naginaMasterId) {
         condition.id = naginaMasterId;
@@ -258,6 +257,7 @@ class MasterController {
       }
 
       const records = await MasterService.GetOnlinePipemaker(filter);
+ 
 
       res.success(records);
     } catch (error) {
@@ -268,6 +268,10 @@ class MasterController {
 
   static async FetchKarigar(req, res) {
     try {
+
+
+console.log("FetchKarigar called",req.query)
+
       const search =
         req.query.search && req.query.search !== "undefined"
           ? req.query.search
@@ -279,11 +283,11 @@ class MasterController {
           : null;
 
 
-          const getBackendWorkerType = () => {
+          const getBackendWorkerType = (workerType) => {
             switch (workerType) {
               case 'CUTTING_KARIGAR':
                 return 'KARIGAR';
-              case 'PIPE_MAKER':
+              case 'PIPEMAKER':
                 return 'PIPEMAKER';
               case 'NAGINA_AGENT':
                 return 'AGENT';
@@ -294,7 +298,7 @@ class MasterController {
 
       const filter = {
         organization: {
-          orgType: getBackendWorkerType(),
+          orgType: getBackendWorkerType(workerType),
         },
       };
 
@@ -306,10 +310,12 @@ class MasterController {
       }
       
       // Filter by worker type if provided
-      if (workerType) {
-        filter.workerType = workerType;
-      }
+      // if (workerType) {
+      //   filter.workerType = workerType;
+      // }
 
+
+  
       const records = await MasterService.GetOnlineKarigar(filter);
 
       res.success(records);
