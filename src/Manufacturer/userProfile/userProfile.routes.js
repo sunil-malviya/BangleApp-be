@@ -15,7 +15,7 @@ import tokenvalidate from "./../../../middleware/authorization.js";
 
 // const uploader = new UploadTo({ dir: "designs", isImage: true, fileSize: 5 });
 const uploader = new UploadTo({ dir: "profile", isImage: true, fileSize: 5 });
-
+const uploaderLogo = new UploadTo({ dir: "logo", isImage: true, fileSize: 5 });
 /**
  * @swagger
  * /user/update/{id}:
@@ -76,7 +76,7 @@ router.put(
 router.put(
   "/manufacturer-profile",
   tokenvalidate, 
-  uploader.single("image"), 
+  uploaderLogo.single("image"), 
   // checkInput("add_design"),
   // showParametersErrors,
   userProfileController.updateManufacturerProfile
