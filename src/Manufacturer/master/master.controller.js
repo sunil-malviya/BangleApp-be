@@ -4,7 +4,6 @@ class MasterController {
   // ------------------------worker master-----------------------------------
 
   static async createWorkerMaster(req, res) {
-    console.log("body data=", req.body);
     try {
       const body = req.getBody([
         "fullName",
@@ -158,7 +157,7 @@ class MasterController {
         req.query.search && req.query.search !== "undefined"
           ? req.query.search
           : false;
-      console.log(organizationId, naginaMasterId, search);
+
       let condition = { organizationId };
       if (naginaMasterId) {
         condition.id = naginaMasterId;
@@ -244,20 +243,27 @@ class MasterController {
           ? req.query.search
           : false;
 
-      const filter = {
-        organization: {
-          orgType: "PIPEMAKER",
-        },
-      };
-
-      if (search && search.trim() !== "") {
-        filter.OR = [
-          { fullName: { contains: search, mode: "insensitive" } },
-          { mobile: { contains: search, mode: "insensitive" } },
-        ];
-      }
-
+          const filter = {
+            AND: [
+              {
+                organization: {
+                  orgType: "PIPEMAKER",
+                },
+              },
+            ],
+          };
+      
+          if (search && search.trim() !== "") {
+            filter.AND.push({
+              OR: [
+                { fullName: { contains: search, mode: "insensitive" } },
+                { mobile: { contains: search, mode: "insensitive" } },
+              ],
+            });
+          }
+      
       const records = await MasterService.GetOnlinePipemaker(filter);
+ 
 
       res.success(records);
     } catch (error) {
@@ -268,6 +274,10 @@ class MasterController {
 
   static async FetchKarigar(req, res) {
     try {
+
+
+console.log("FetchKarigar called",req.query)
+
       const search =
         req.query.search && req.query.search !== "undefined"
           ? req.query.search
@@ -291,7 +301,13 @@ class MasterController {
         ];
       }
       
+      // Filter by worker type if provided
+      // if (workerType) {
+      //   filter.workerType = workerType;
+      // }
 
+
+  
       const records = await MasterService.GetOnlineKarigar(filter);
 
       res.success(records);

@@ -16,7 +16,7 @@ class Pipejobmakerservice {
       note: data.note,
     };
     obj.status = data.isOnlineWorker ? 0 : 2;
-    obj.pipemakerstatus =  data.isOnlineWorker ? 0 : 1;
+    obj.pipemakerstatus = data.isOnlineWorker ? 0 : 1;
 
     data.isOnlineWorker
       ? (obj.workerOnline = { connect: { id: data.pipeMakerId } })
@@ -45,6 +45,7 @@ class Pipejobmakerservice {
 
   static async createPipejob(data) {
     return await Prisma.$transaction(async (tx) => {
+      console.log("data", data);
       const result = await tx.pipeMakerJob.create({ data: data.obj });
 
       data.updatedPipeItems.forEach((item) => {
@@ -147,19 +148,15 @@ class Pipejobmakerservice {
         throw new Error('Pipe item not found');
       }
 
-      if (!result.job) {
-        throw new Error('Associated job not found');
+      if (data.quantity > result.total_qty) {
+        throw new Error(
+          `Quantity (${data.quantity}) exceeds available total quantity (${result.total_qty}).`
+        );
       }
 
-      // Determine the pipemaker name based on worker type
-      let pipemaker;
-      if (result.job.workerStatus === 'Online' && result.job.workerOnline?.organization) {
-        pipemaker = result.job.workerOnline.organization.orgName;
-      } else if (result.job.workerStatus === 'Offline' && result.job.workerOffline) {
-        pipemaker = result.job.workerOffline.shopName;
-      } else {
-        throw new Error('Invalid worker configuration');
-      }
+      let pipemaker =
+        result.job.workerOnline.organization.orgName ||
+        result.job.workerOffline.shopName;
 
       const allpipeitem = await tx.pipeItem.findMany({
         where: { jobId: result.jobId },
@@ -200,6 +197,7 @@ class Pipejobmakerservice {
           size: result.size,
           weight: result.weight,
           color: data.color,
+          colorcode: data.colorcode,
           stock: data.quantity,
           organization: { connect: { id: data.organization_id } },
         },
