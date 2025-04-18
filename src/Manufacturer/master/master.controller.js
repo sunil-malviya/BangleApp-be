@@ -277,24 +277,10 @@ class MasterController {
         req.query.workerType && req.query.workerType !== "undefined"
           ? req.query.workerType
           : null;
-
-
-          const getBackendWorkerType = () => {
-            switch (workerType) {
-              case 'CUTTING_KARIGAR':
-                return 'KARIGAR';
-              case 'PIPE_MAKER':
-                return 'PIPEMAKER';
-              case 'NAGINA_AGENT':
-                return 'AGENT';
-              default:
-                return '';
-            }
-          };
-
+      
       const filter = {
         organization: {
-          orgType: getBackendWorkerType(),
+          orgType:workerType,
         },
       };
 
@@ -305,10 +291,6 @@ class MasterController {
         ];
       }
       
-      // Filter by worker type if provided
-      if (workerType) {
-        filter.workerType = workerType;
-      }
 
       const records = await MasterService.GetOnlineKarigar(filter);
 
