@@ -59,6 +59,25 @@ class Orderservice {
   }
 
 
+
+
+
+
+
+  static async acceptjob(id, data) {
+    return await Prisma.$transaction(async (tx) => {
+      return await tx.pipeMakerJob.update({
+        where: { id },
+        data,
+      });
+    });
+  }
+  
+
+
+
+
+
   /////----------------------------------------------------------------------------/////
 }
 

@@ -11,8 +11,11 @@ class Pipejobmakerservice {
     const color = await Prisma.color.findMany();
     
     const Pipeweight = await Prisma.PipeWeight.findMany();
+        
+    const PipeMaterail = await Prisma.Material.findMany();
 
-    return { pipesize, color,Pipeweight };
+
+    return { pipesize, color,Pipeweight,PipeMaterail };
   }
 }
 
