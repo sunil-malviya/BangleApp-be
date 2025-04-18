@@ -22,7 +22,7 @@ class PipejobController {
      
 
       const data = await PipejobService.Arrangedata(body, organization_id);
-      data.jobNumber = totalorder + 1;
+      data.obj.jobNumber = totalorder + 1;
       
       const result = await PipejobService.createPipejob(data);
 
