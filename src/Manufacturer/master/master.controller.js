@@ -243,19 +243,25 @@ class MasterController {
           ? req.query.search
           : false;
 
-      const filter = {
-        organization: {
-          orgType: "PIPEMAKER",
-        },
-      };
-
-      if (search && search.trim() !== "") {
-        filter.OR = [
-          { fullName: { contains: search, mode: "insensitive" } },
-          { mobile: { contains: search, mode: "insensitive" } },
-        ];
-      }
-
+          const filter = {
+            AND: [
+              {
+                organization: {
+                  orgType: "PIPEMAKER",
+                },
+              },
+            ],
+          };
+      
+          if (search && search.trim() !== "") {
+            filter.AND.push({
+              OR: [
+                { fullName: { contains: search, mode: "insensitive" } },
+                { mobile: { contains: search, mode: "insensitive" } },
+              ],
+            });
+          }
+      
       const records = await MasterService.GetOnlinePipemaker(filter);
  
 

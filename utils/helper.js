@@ -14,6 +14,9 @@ export const getFullImagePath = (filenames, dir, req) => {
     case "organization":
       folder = "organization";
       break;
+    case "logo":
+      folder = "logo";
+      break;
     default:
       folder = "others";
   }
