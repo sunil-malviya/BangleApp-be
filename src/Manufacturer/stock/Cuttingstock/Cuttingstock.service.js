@@ -1,6 +1,6 @@
 "use strict";
-import { PrismaClient, TransactionType } from "@prisma/client";
-const Prisma = new PrismaClient();
+
+import Prisma from "./../../../db/prisma.js";
 
 // Constants
 const IS_DELETED_FALSE = 0;
