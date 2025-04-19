@@ -23,6 +23,8 @@ model User {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   organization Organization?
+  pipeMakerJobs PipeMakerJob[] @relation("WorkerOnlineRelation")
+  cuttingKarigarJobs CuttingKarigarJob[]
 }
 
 model Organization {
@@ -49,6 +51,13 @@ model Organization {
 
   userId String @unique
   user   User   @relation(fields: [userId], references: [id])
+  designs Design[] 
+  pipeMakerJobs PipeMakerJob[]
+  cuttingKarigarJobs CuttingKarigarJob[]
+  pipeStocks PipeStock[]
+  cuttingStocks CuttingStock[]
+  stockTransactions StockTransaction[]
+  applicationSettings ApplicationSettings[]
 }
 
 enum OrganizationType {
@@ -61,4 +70,368 @@ enum OrganizationType {
 enum Status {
   ACTIVE
   INACTIVE
+}
+
+model Design{
+  id             String   @id @default(uuid()) 
+  name           String
+  image          String
+  images         String[]
+  sizeFrom       Float   
+  sizeTo         Float     
+
+  colors     String[] 
+  rate            Float      
+  details        String  
+  organizationId String   
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade) 
+  
+  createdAt      DateTime @default(now()) 
+  updatedAt      DateTime @updatedAt // Auto-updated timestamp
+}
+
+model Worker {
+  id             String        @id @default(uuid())
+  fullName       String
+  mobile         String      
+  address        String
+  shopName       String
+  workerType     workerType
+  organizationId String
+  status         Int           @default(1)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  PipeMakerJobs  PipeMakerJob[] 
+ CuttingKarigarJobs CuttingKarigarJob[]
+}
+
+enum workerType {
+  KARIGAR
+  AGENT
+  PIPEMAKER
+}
+
+enum worktype {
+  Online
+  Offline
+  
+}
+
+model PipeMakerJob {
+  id              String      @id @default(uuid())
+
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  organizationId  String
+  workerStatus    worktype
+
+
+  workerOnlineId   String?
+  workerOnline     User? @relation(name: "WorkerOnlineRelation", fields: [workerOnlineId], references: [id])
+
+  workerOfflineId String?  
+  workerOffline   Worker? @relation(fields: [workerOfflineId], references: [id])
+
+  createdDate     DateTime
+  completionDate  DateTime?
+  totalPipeQty    Int
+  totalitem       Int
+  pipeItems       PipeItem[]
+  materialDetails Json
+  status          Int   //  - 0 draft 1 pending  2 progress    3 completed 
+  isdeleted       Int   @default(0) /// 1 = deleted and 0 not 
+  pipemakerstatus Int   @default(0)   //---  1 accept  2 reject
+  workernote      String?
+  note            String? @default("")
+  jobNumber       Int   @default(0) 
+
+}
+model PipeItem {
+  id              String       @id @default(uuid())
+  jobId           String
+  job             PipeMakerJob @relation(fields: [jobId], references: [id])
+  size            String
+  weight          String
+  rate            Float
+  rateType        String
+  colorQuantities Json   
+  total_qty       Int
+  total_item      Int
+  isdeleted       Int   @default(0) /// 1 = deleted and 0 not 
+
+}
+
+model Nagina {
+  id             String        @id @default(uuid())
+  naginaName     String        
+  naginaSize     String        
+  image          String?
+  organizationId String
+  isdeleted      Int           @default(0) /// 1 = deleted and 0 not  
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  cuttingItems   CuttingItem[]
+  cuttingStocks  CuttingStock[]
+}
+
+model Pipesize {
+     id             String        @id @default(uuid())
+     label          String
+     value          String      
+     order          Int
+     isdeleted      Int           @default(0) /// 1 = deleted and 0 not  
+     createdAt      DateTime      @default(now())
+     updatedAt      DateTime      @updatedAt
+}
+
+
+model PipeWeight {
+     id             String        @id @default(uuid())
+     label          String
+     value          String      
+     order          Int
+     isdeleted      Int           @default(0) /// 1 = deleted and 0 not  
+     createdAt      DateTime      @default(now())
+     updatedAt      DateTime      @updatedAt
+}
+
+
+
+
+
+
+model Color {
+     id             String        @id @default(uuid())
+     name           String
+     value          String
+     isdeleted      Int           @default(0) /// 1 = deleted and 0 not  
+     createdAt      DateTime      @default(now())
+     updatedAt      DateTime      @updatedAt
+}
+
+model CuttingKarigarJob {
+  id               String        @id @default(uuid())
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id])
+  workerStatus     worktype
+  workerOnlineId   String?
+  workerOnline     User?         @relation(fields: [workerOnlineId], references: [id])
+  workerOfflineId  String?
+  workerOffline    Worker? @relation(fields: [workerOfflineId], references: [id])
+  createdDate      DateTime
+  completionDate   DateTime?
+  totalAvgBangleQty Int
+  totalPipeQty      Int
+  totalitem         Int
+  totalPrice        Float
+  cuttingItems      CuttingItem[]
+  note             String?
+  status           Int   //  -  0 draft, 1 pending (online), 2 completed, 3 in progress (offline)
+  isdeleted        Int   @default(0) /// 1 = deleted and 0 not
+  jobNumber        Int   @default(0)
+}
+
+model CuttingItem {
+  id               String        @id @default(uuid())
+  jobId            String
+  job              CuttingKarigarJob @relation(fields: [jobId], references: [id],onDelete: Cascade)
+  pipeStockId      String
+  pipeStock        PipeStock     @relation(fields: [pipeStockId], references: [id])
+  pipeQty          Int
+  AvgBangleQty     Int
+  bangleWidth      Int
+  naginaId         String
+  nagina           Nagina        @relation(fields: [naginaId], references: [id])
+  isdeleted        Int           @default(0) /// 1 = deleted and 0 not
+  perPipeCuttingPrice Float
+  receivedQty      Int
+  receivedDate     DateTime?
+  receivedLog      Json?
+  unit            Unit
+  totalItemBangles Int           @default(0)
+}
+
+enum StockType {
+  PIPE
+  NAGINA
+  CUTTING
+  MATERIAL
+  BANGLE
+  OTHER
+}
+
+enum TransactionType {
+  INWARD
+  OUTWARD
+  ADJUSTMENT
+  RETURN
+}
+
+enum Unit {
+  kg
+  gm
+  mtr
+  m
+  m2
+  m3
+  pcs
+  mm
+  inch
+  cm 
+  ft
+  lt
+}
+
+model StockTransaction {
+  id             String           @id @default(uuid())
+  stockId        String
+  stockType      StockType
+  transactionType TransactionType
+  quantity       Int
+  remainingStock Int
+  note           String?
+  jobId          String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  organizationId String?
+  organization   Organization?    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+
+  pipeStockId      String?
+  pipeStock        PipeStock?       @relation(fields: [pipeStockId], references: [id], onDelete: Cascade)
+
+  cuttingStockId   String?
+  cuttingStock     CuttingStock?    @relation(fields: [cuttingStockId], references: [id], onDelete: Cascade)
+   
+  PipeWeight       Float?
+
+
+  @@index([stockId, stockType])
+  @@index([transactionType])
+  @@index([createdAt])
+}
+
+model PipeStock {
+  id             String             @id @default(uuid())
+  size           String
+  weight         String
+  color          String
+  colorcode      String             @default("dddddd")
+  stock          Int
+  isdeleted      Int                @default(0) /// 1 = deleted and 0 not
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  organizationId String
+  organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  cuttingItems   CuttingItem[]
+  transactions   StockTransaction[]
+  PerPipeWeight  Float? 
+  
+  @@unique([organizationId, size, weight, color])
+}
+
+model CuttingStock {
+  id             String             @id @default(uuid())
+  size           String
+  color          String
+  width          Float
+  naginaId       String
+  nagina         Nagina             @relation(fields: [naginaId], references: [id])
+  quantity       Int
+  weight         String
+
+  batchNumber    String?
+  jobId          String?            // Reference to the cutting job that created this stock
+  isdeleted      Int                @default(0) /// 1 = deleted and 0 not
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  organizationId String
+  organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  transactions   StockTransaction[]
+
+  @@unique([organizationId, size, color, width, naginaId, weight])
+}
+
+model ApplicationSettings {
+     id             String        @id @default(uuid())
+     organizationId String
+     orgType        OrganizationType
+     settingsType   SettingsType
+     settings       Json?
+     organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+     isdeleted      Int           @default(0) /// 1 = deleted and 0 not  
+     createdAt      DateTime      @default(now())
+     updatedAt      DateTime      @updatedAt
+}
+
+enum SettingsType {
+  GENERAL
+  PDF
+}
+
+
+
+
+
+model Material {
+  id        String   @id @default(uuid())
+  label     String        // e.g.,Polymer,Resign ,
+  value     String
+  type      String  // Pipe, Polish
+  unit      Unit        // e.g., "kg", "Liter", "pieces"
+
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+ 
+}
+
+
+
+
+model PipeReminder {
+  id          String   @id @default(uuid())
+  title       String    // Short heading for the notification
+  message     String    // Detailed message body
+  type        String    // e.g., INFO, ALERT, 
+  isRead      Boolean   @default(false)
+  recipientId String      // Optional: link to a user if notifications are user-specific
+  jobId       String
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+
+model PipeRawMaterialWallet {
+  id                String   @id @default(uuid())
+  
+  materialname      String
+
+  organizationId    String
+  workerStatus      worktype
+  workerOnlineId    String?
+  workerOfflineId   String?
+
+  avaliblequantity  Float
+  lastUsedAt        DateTime?
+  updatedAt         DateTime       @updatedAt
+  createdAt         DateTime       @default(now())
+  materiallogs      PipeRawMaterialLog[]
+
+  @@unique([organizationId,  workerOnlineId])
+  @@unique([organizationId,  workerOfflineId])
+
+}
+
+model PipeRawMaterialLog {
+  id              String   @id @default(uuid())
+  walletId        String
+  wallet          PipeRawMaterialWallet @relation(fields: [walletId], references: [id])
+  actionType      String   // Enum: ADDED, USED, ADJUSTED
+  quantity        Float
+  reason          String?
+
+  jobId           String
+
+  updatedAt       DateTime  @updatedAt
+  createdAt       DateTime  @default(now())
 }

@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import  cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import cors from 'cors';
+import setupSwagger from './utils/swagger.js';
 
 // Import your local route modules (adjust file extensions if needed)
 import indexRouter from './routes/index.js';
@@ -13,8 +14,11 @@ import agentRouter from './src/Agent/index.js';
 import karigarRouter from './src/Karigar/index.js';
 import manufacturerRouter from './src/Manufacturer/index.js';
 import pipeMakerRouter from './src/PipeMaker/index.js';
+import GeneralRoutes from "./src/General/index.js"
 import {responseHandler} from './utils/apiResponse.js'
 import helperRouter from './src/helper/index.js'
+import custommethod from "./middleware/validator/customMethods.js";
+import applicationSettingsRoutes from './src/applicationSettings/index.js';
 
 // ---------------------------------------------------------------------
 // Recreate __dirname in ESM
@@ -33,9 +37,12 @@ app.set('view engine', 'jade');
 
 // middleware
 app.use(morgan('dev'));
-app.use(express.json());
+
+app.use(express.json({ type: "application/json", limit: "50mb" }));
+
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(responseHandler);
-app.use(express.urlencoded({ extended: false }));
+
 app.use(cookieParser());
 
 const corsOptions = {
@@ -58,13 +65,25 @@ app.use(express.static(path.join(__dirname, 'public')));
 // ---------------------------------------------------------------------
 // Routes
 // ---------------------------------------------------------------------
+
+app.use(custommethod);
 app.use('/', indexRouter);
 app.use('/auth', authRouter);
 app.use('/agent', agentRouter);
 app.use('/karigar', karigarRouter);
 app.use('/manufacturer', manufacturerRouter);
 app.use('/pipeMaker', pipeMakerRouter);
+app.use('/general', GeneralRoutes);
 app.use('/api/helper',helperRouter)
+app.use('/application-settings', applicationSettingsRoutes);
+
+
+
+
+
+
+setupSwagger(app); 
+
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
@@ -79,10 +98,10 @@ app.use((err, req, res, next) => {
     req.app.get('env') === 'development' ? err : {};
 
   // render the error page
-  console.log(err.stack)
   res.status(err.status || 500);
   res.render('error');
 });
+
 
 // ---------------------------------------------------------------------
 // Export the app (ESM style)
