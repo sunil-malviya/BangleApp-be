@@ -13,7 +13,7 @@ class CuttingJobService {
       completionDate: data.completionDate,
       note: data.note || "",
     };
-    obj.status = 1;
+    obj.status = 0; // Default status to draft
 
     data.isOnlineWorker
       ? (obj.workerOnlineId = data.karigarId)
@@ -63,7 +63,7 @@ class CuttingJobService {
         // Create the cutting job with draft status
         const job = await tx.cuttingKarigarJob.create({
           data: {
-            status: 0, // Draft status
+            status: jobData.obj.status,
             createdDate: jobData.obj.createdDate,
             completionDate: jobData.obj.completionDate,
             note: jobData.obj.note,
