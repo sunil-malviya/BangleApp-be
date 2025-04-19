@@ -1,5 +1,5 @@
 "use strict";
-import { PrismaClient, StockType, TransactionType } from "@prisma/client";
+import { PrismaClient, TransactionType } from "@prisma/client";
 const Prisma = new PrismaClient();
 
 // Constants
