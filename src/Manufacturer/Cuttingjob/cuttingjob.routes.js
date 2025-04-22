@@ -35,10 +35,6 @@ router.get("/test-logs", (req, res) => {
 router.get(
   "/pipe-stocks",
   disableCache,
-  (req, res, next) => {
-    console.log("[ROUTER CHECK] pipe-stocks route matched!");
-    next();
-  },
   CuttingJobController.getPipeStocks,
 );
 
@@ -57,10 +53,6 @@ router.get(
 router.get(
   "/stock-transactions/:stockId",
   disableCache,
-  (req, res, next) => {
-    console.log("[ROUTER CHECK] stock-transactions route matched!");
-    next();
-  },
   CuttingJobController.getStockTransactions
 );
 

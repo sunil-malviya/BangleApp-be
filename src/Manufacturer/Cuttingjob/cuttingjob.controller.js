@@ -16,7 +16,7 @@ class CuttingJobController {
         "isOnlineWorker",
       ]);
       
-console.log('[BACKEND CONTROLLER] Body:', req.body);
+      console.log('[BACKEND CONTROLLER] Body>>>>>>>>>>>>:', req.body);
       // Validate that cuttingItems exists and is an array
       if (!body.cuttingItems || !Array.isArray(body.cuttingItems) || body.cuttingItems.length === 0) {
         console.error('[BACKEND CONTROLLER] No cutting items provided or invalid format');
@@ -67,7 +67,13 @@ console.log('[BACKEND CONTROLLER] Body:', req.body);
       console.log('[BACKEND CONTROLLER] Arranging data for service...');
       const data = await CuttingJobService.arrangeData(body, organization_id);
       
+      console.log('<<<<<<<<<<<<<<<<<<<<Data arranged successfully:>>>>>>>>>>>>>>>>>>>>', data);
       console.log('[BACKEND CONTROLLER] Calling service to create cutting job...');
+      return res.status(201).json({
+        status: true,
+        message: 'Cutting job created successfully',
+        data: data
+      });
       const result = await CuttingJobService.createCuttingJob(data);
       
       console.log('[BACKEND CONTROLLER] Cutting job created successfully:', result.id);
@@ -327,11 +333,11 @@ console.log('[BACKEND CONTROLLER] Body:', req.body);
 
   static async receiveCuttingItems(req, res) {
     try {
-      console.log('[BACKEND CONTROLLER] Receive cutting items - Request received');
-      console.log('[BACKEND CONTROLLER] Request body:', req.body);
-      console.log('[BACKEND CONTROLLER] Request headers:', JSON.stringify(req.headers));
-      console.log('[BACKEND CONTROLLER] Request URL:', req.originalUrl);
-      console.log('[BACKEND CONTROLLER] Request method:', req.method);
+      // console.log('[BACKEND CONTROLLER] Receive cutting items - Request received');
+      // console.log('[BACKEND CONTROLLER] Request body:', req.body);
+      // console.log('[BACKEND CONTROLLER] Request headers:', JSON.stringify(req.headers));
+      // console.log('[BACKEND CONTROLLER] Request URL:', req.originalUrl);
+      // console.log('[BACKEND CONTROLLER] Request method:', req.method);
       
       const name = req.user.fullName;
       const organization_id = req.user.organization.id;
@@ -454,16 +460,10 @@ console.log('[BACKEND CONTROLLER] Body:', req.body);
 
   static async getNaginhas(req, res) {
     try {
-      console.log("[DEBUG] getNaginhas controller method START");
-      console.log("[DEBUG] Request user:", req.user?.organization?.id);
-      
       const organization_id = req.user.organization.id;
       
       // Try to get data from the database
       let result = await CuttingJobService.getNaginhas(organization_id);
-      
-      console.log("[DEBUG] Naginhas result:", result ? "Data found" : "No data");
-      console.log("[DEBUG] Sending response with type:", typeof result, "and length:", Array.isArray(result) ? result.length : "N/A");
       
       return res.status(200).json({
         status: true,
@@ -482,13 +482,12 @@ console.log('[BACKEND CONTROLLER] Body:', req.body);
 
   static async getStockTransactions(req, res) {
     try {
-      console.log('[BACKEND CONTROLLER] Get Stock Transactions - Request received');
       
       const organization_id = req.user.organization.id;
-      console.log('[BACKEND CONTROLLER] Organization ID:', organization_id);
+     
       
       const stockId = req.params.stockId;
-      console.log('[BACKEND CONTROLLER] Stock ID:', stockId);
+     
       
       const page = req.query.pageNo ? parseInt(req.query.pageNo, 10) : 1;
       const pageSize = req.query.pageSize ? parseInt(req.query.pageSize, 10) : 10;
@@ -500,8 +499,6 @@ console.log('[BACKEND CONTROLLER] Body:', req.body);
         page,
         pageSize
       );
-      
-      console.log(`[BACKEND CONTROLLER] Found ${transactions.length} stock transactions`);
       
       return res.status(200).json({
         status: true,

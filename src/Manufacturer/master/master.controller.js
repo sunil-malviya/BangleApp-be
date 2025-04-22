@@ -287,24 +287,10 @@ console.log("FetchKarigar called",req.query)
         req.query.workerType && req.query.workerType !== "undefined"
           ? req.query.workerType
           : null;
-
-
-          const getBackendWorkerType = (workerType) => {
-            switch (workerType) {
-              case 'CUTTING_KARIGAR':
-                return 'KARIGAR';
-              case 'PIPEMAKER':
-                return 'PIPEMAKER';
-              case 'NAGINA_AGENT':
-                return 'AGENT';
-              default:
-                return '';
-            }
-          };
-
+      
       const filter = {
         organization: {
-          orgType: getBackendWorkerType(workerType),
+          orgType:workerType,
         },
       };
 
