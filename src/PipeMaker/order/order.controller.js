@@ -3,6 +3,7 @@ import Orderservice from "./order.service.js";
 class OrderController {
   static async getPipejobs(req, res) {
     try {
+
       const organization_id = req.user.id;
       const page = req.query.pageNo ? parseInt(req.query.pageNo, 10) : 1;
       let filter = req.query.filter ? JSON.parse(req.query.filter) : {};
@@ -91,7 +92,7 @@ class OrderController {
     try {
       const id = req.params.id;
 
-      const result = await Orderservice.updatejobstatus(id, {
+      const result = await Orderservice.acceptjob(id, {
         pipemakerstatus: 1,
         status: 2,
       });
@@ -119,6 +120,35 @@ class OrderController {
       res.status(500).json({ error: error.message });
     }
   }
+
+
+  static async getPipereminder(req, res) {
+    try {
+      
+      const userId = req.user.id;
+      const records = await Orderservice.getMaterailreminder({recipientId:userId,isRead:false});
+console.log(records);
+      res.success(records);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
 
 export default OrderController;

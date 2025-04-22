@@ -158,20 +158,22 @@ class PipejobController {
 
   static async Recievedpipeitems(req, res) {
     try {
+
+      console.log(req.body)
       const name = req.user.fullName;
       const organization_id = req.user.organization.id;
-      const body = req.getBody(["id", "weight", "item", "quantity"]);
+      const body = req.getBody(["id", "color_code","color" ]);
       const newLog = {
         timestamp: new Date().toISOString(),
         receivedBy: name,
-        receivedQuantity: body.quantity,
+        receivedQuantity: 0,
       };
 
       const result = await PipejobService.RecievedPipeMark(body.id, {
-        quantity: body.quantity,
-        weight: body.weight,
-        color: body.item.color.name,
-        colorcode: body.item.color.value,
+
+
+        color: body.color,
+        colorcode: body.color_code,
         newLog,
         organization_id: organization_id,
       });
