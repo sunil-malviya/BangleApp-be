@@ -147,13 +147,15 @@ model PipeMakerJob {
 }
 model PipeItem {
   id              String       @id @default(uuid())
+  Lotno           Int   @default(0) 
   jobId           String
   job             PipeMakerJob @relation(fields: [jobId], references: [id])
-  size            String
-  weight          String
+  Color           String
+  color_code      String
+  lotsize         String
   rate            Float
   rateType        String
-  colorQuantities Json   
+  sizeQuantities Json   
   total_qty       Int
   total_item      Int
   isdeleted       Int   @default(0) /// 1 = deleted and 0 not 
@@ -176,7 +178,8 @@ model Nagina {
 model Pipesize {
      id             String        @id @default(uuid())
      label          String
-     value          String      
+     value          String     
+     organizationId String        @default("0")
      order          Int
      isdeleted      Int           @default(0) /// 1 = deleted and 0 not  
      createdAt      DateTime      @default(now())
@@ -187,7 +190,8 @@ model Pipesize {
 model PipeWeight {
      id             String        @id @default(uuid())
      label          String
-     value          String      
+     value          String    
+     organizationId String        @default("0")
      order          Int
      isdeleted      Int           @default(0) /// 1 = deleted and 0 not  
      createdAt      DateTime      @default(now())
@@ -203,10 +207,27 @@ model Color {
      id             String        @id @default(uuid())
      name           String
      value          String
+     organizationId String        @default("0")
      isdeleted      Int           @default(0) /// 1 = deleted and 0 not  
      createdAt      DateTime      @default(now())
      updatedAt      DateTime      @updatedAt
 }
+
+
+ 
+model Lotsize {
+     id             String        @id @default(uuid())
+     label          String
+     value          String
+     organizationId String        @default("0")
+     isdeleted      Int           @default(0) /// 1 = deleted and 0 not  
+     createdAt      DateTime      @default(now())
+     updatedAt      DateTime      @updatedAt
+}
+
+
+
+
 
 model CuttingKarigarJob {
   id               String        @id @default(uuid())

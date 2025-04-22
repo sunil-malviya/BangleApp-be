@@ -2,7 +2,7 @@ import Prisma from "./../../../db/prisma.js";
 
 class Pipejobmakerservice {
   static calculatecolorQty = (item) => {
-    return item.colorQuantities.reduce((sum, cq) => sum + cq.quantity, 0);
+    return item.sizeQuantities.reduce((sum, cq) => sum + cq.quantity, 0);
   };
 
   static async Arrangedata(data, org_id) {
@@ -36,7 +36,7 @@ class Pipejobmakerservice {
 
     const updatedPipeItems = data.pipeItems.map((item) => ({
       ...item,
-      total_item: item.colorQuantities.length,
+      total_item: item.sizeQuantities.length,
       total_qty: this.calculatecolorQty(item),
     }));
 
@@ -127,6 +127,7 @@ class Pipejobmakerservice {
   //----------------------- recieved item  enties --------------------------------------------------///
 
   static async RecievedPipeMark(id, data) {
+    console.log("data", data);
     return await Prisma.$transaction(async (tx) => {
       const result = await tx.pipeItem.findUnique({
         where: { id },
@@ -145,7 +146,7 @@ class Pipejobmakerservice {
       });
 
       if (!result) {
-        throw new Error('Pipe item not found');
+        throw new Error("Pipe item not found");
       }
 
       if (data.quantity > result.total_qty) {
@@ -161,101 +162,88 @@ class Pipejobmakerservice {
       const allpipeitem = await tx.pipeItem.findMany({
         where: { jobId: result.jobId },
         select: {
-          colorQuantities: true,
+          sizeQuantities: true,
         },
       });
 
-      const totalrecieved = (await this.totalRecievedPipe(allpipeitem)) + data.quantity;
+      const totalrecieved = await this.totalRecievedPipe(allpipeitem);
 
       // Build fresh object with add current received qty
       delete result.job;
 
-      const updatedData = await this.Findandupdateitem(
-        result,
-        data.color,
-        data.quantity,
-        data.newLog
-      );
-
+      const updatedData = await this.Findandupdateitem(result);
+   
       if (!updatedData) {
-        throw new Error('Failed to update item data');
+        throw new Error("Failed to update item data");
       }
 
-      const record = await tx.PipeStock.upsert({
-        where: {
-          organizationId_size_weight_color: {
-            organizationId: data.organization_id,
-            size: result.size,
-            weight: result.weight,
-            color: data.color,
+      const total = await this.totalRecievedPipe([updatedData])+totalrecieved
+
+      updatedData.sizeQuantities.forEach(async (itemobj) => {
+        const record = await tx.PipeStock.upsert({
+          where: {
+            organizationId_size_weight_color: {
+              organizationId: data.organization_id,
+              size: itemobj.size,
+              weight: itemobj.weight,
+              color: updatedData.Color,
+            },
           },
-        },
-        update: {
-          stock: { increment: data.quantity },
-        },
-        create: {
-          size: result.size,
-          weight: result.weight,
-          color: data.color,
-          colorcode: data.colorcode,
-          stock: data.quantity,
-          organization: { connect: { id: data.organization_id } },
-        },
+          update: {
+            stock: { increment: itemobj.quantity },
+          },
+          create: {
+            size: itemobj.size,
+            weight: itemobj.weight,
+            color: updatedData.Color,
+            colorcode: updatedData.colorcode,
+            stock: itemobj.quantity,
+            organization: { connect: { id: data.organization_id } },
+          },
+        });
       });
 
-      let transdata = {
-        stockType: "PIPE",
-        transactionType: "INWARD",
-        organization: { connect: { id: data.organization_id } },
-        jobId: result.jobId,
-        remainingStock: record.stock,
-        quantity: data.quantity,
-        stockId: record.id,
-        pipeStock: { connect: { id: record.id } },
-        note: `Received From ${pipemaker}`,
-      };
+      // let transdata = {
+      //   stockType: "PIPE",
+      //   transactionType: "INWARD",
+      //   organization: { connect: { id: data.organization_id } },
+      //   jobId: result.jobId,
+      //   remainingStock: record.stock,
+      //   quantity: data.quantity,
+      //   stockId: record.id,
+      //   pipeStock: { connect: { id: record.id } },
+      //   note: `Received From ${pipemaker}`,
+      // };
 
-      await tx.StockTransaction.create({ data: transdata });
+      // await tx.StockTransaction.create({ data: transdata });
 
       await tx.pipeItem.update({
         where: { id },
         data: updatedData,
       });
 
-      await tx.pipeMakerJob.updateMany({
+
+      console.log("totalrecieved", total);
+      const jobupdate = await tx.pipeMakerJob.updateMany({
         where: {
           id: result.jobId,
-          totalPipeQty: totalrecieved,
+          totalPipeQty: total,
         },
         data: {
           status: 3,
         },
       });
 
-      return record;
+      return jobupdate;
     });
   }
 
   //--------------------   ---------------------------------------------------------/////
 
-  static async Findandupdateitem(
-    data,
-    colorName,
-    receivedQty,
-    deliveryLogEntry
-  ) {
-    const colorObj = data.colorQuantities.find(
-      (item) => item.color.name.toLowerCase() === colorName.toLowerCase()
-    );
-
-    if (!colorObj) {
-      console.log(`Color '${colorName}' not found.`);
-      return null;
-    }
-
-    colorObj.totalrecieved += receivedQty;
-
-    colorObj.deliverylog.push(deliveryLogEntry);
+  static async Findandupdateitem(data) {
+    data.sizeQuantities.forEach((itemobj) => {
+      itemobj.totalrecieved += itemobj.quantity;
+    });
 
     return data;
   }
@@ -263,10 +251,11 @@ class Pipejobmakerservice {
   //-------------------------------------------------  calcualte size wise total recieved pipe ------------------------------------------------------------------------------//
 
   static calculateSizewise = (item) => {
-    return item.colorQuantities.reduce((sum, cq) => sum + cq.totalrecieved, 0);
+    return item.sizeQuantities.reduce((sum, cq) => sum + cq.totalrecieved, 0);
   };
 
   static async totalRecievedPipe(pipeItems) {
+
     return pipeItems.reduce((total, item) => {
       return total + this.calculateSizewise(item);
     }, 0);
@@ -280,20 +269,6 @@ class Pipejobmakerservice {
       data: { status: status },
     });
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
 }
 
 export default Pipejobmakerservice;

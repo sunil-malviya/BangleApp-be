@@ -63,31 +63,33 @@ class Orderservice {
         data,
         include: {
           organization: true,
-     
         },
       });
-      console.log("updatejob", updatejob);
-  
+
       if (updatejob.materialDetails.length === 0) {
         return updatejob;
       }
-  
+
       const isOnline = updatejob.workerStatus === "Online";
       const workerId = isOnline
         ? updatejob.workerOnlineId
         : updatejob.workerOfflineId;
 
+      const whereClause = isOnline
+        ? {
+            organizationId_workerOnlineId: {
+              organizationId: updatejob.organizationId,
+              workerOnlineId: workerId,
+            },
+          }
+        : {
+            organizationId_workerOfflineId: {
+              organizationId: updatejob.organizationId,
+              workerOfflineId: workerId,
+            },
+          };
 
-
-        const whereClause = isOnline
-        ? { organizationId_workerOnlineId: { organizationId: updatejob.organizationId, workerOnlineId: workerId } }
-        : { organizationId_workerOfflineId: { organizationId: updatejob.organizationId, workerOfflineId: workerId } };
-    
-
-  
       for (const material of updatejob.materialDetails) {
-
-        
         await tx.pipeRawMaterialWallet.upsert({
           where: whereClause,
           update: {
@@ -95,7 +97,7 @@ class Orderservice {
           },
           create: {
             materialname: material.name,
-            type: "Pipe",
+
             avaliblequantity: material.quantity,
             organizationId: updatejob.organizationId,
             workerStatus: updatejob.workerStatus,
@@ -104,28 +106,47 @@ class Orderservice {
           },
         });
       }
-  
+
       const materialList = updatejob.materialDetails
-        .map((mat) => `${mat.materialname} (${mat.quantity})`)
+        .map((mat) => `${mat.name} (${mat.quantity})`)
         .join(", ");
-  
+
       await tx.PipeReminder.create({
         data: {
-          title: "Material Collection Reminder",
-          message: `Please collect the following materials for order ID ${updatejob.jobNumber}: ${materialList}. Provided by ${updatejob.organization.name}.`,
+          title:  `Material Collect from ${updatejob.organization.orgName}`,
+          message: `Please collect the following materials for orderID 00 ${updatejob.jobNumber}: ${materialList}. Provided by ${updatejob.organization.orgName}.`,
           type: "INFO",
           recipientId: workerId,
           jobId: updatejob.id,
         },
       });
-  
+
       return updatejob;
     });
   }
-  ;
-  
 
   /////----------------------------------------------------------------------------/////
+
+
+
+
+
+
+  static async getMaterailreminder(cond, limit = 3) {
+    return await Prisma.PipeReminder.findMany({
+      where: cond,
+     
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: limit,
+    });
+  }
+
+
+
+
+
 }
 
 export default Orderservice;

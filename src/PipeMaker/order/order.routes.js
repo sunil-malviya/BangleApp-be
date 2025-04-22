@@ -14,14 +14,7 @@ router.get(
   ordercontroller.getPipejobs
 );
 
-router.get(
-  "/:id",
 
-  //   checkInput("add_design"),
-  //   showParametersErrors,
-
-  ordercontroller.getPipejobs
-);
 
 router.put(
   "/orderstatus/:id",
@@ -29,13 +22,27 @@ router.put(
   ordercontroller.updatepipemakerstatus
 );
 
-
-
 router.put(
   "/orderstatus/reject/:id",
 
   ordercontroller.rejectpipemakerjob
 );
+
+
+router.get(
+  "/pipereminder",
+
+  ordercontroller.getPipereminder
+);
+
+
+
+router.get(
+  "/:id",
+
+  ordercontroller.getPipejobs
+);
+
 
 
 export default router;
