@@ -180,6 +180,7 @@ class Pipejobmakerservice {
       const total = await this.totalRecievedPipe([updatedData])+totalrecieved
 
       updatedData.sizeQuantities.forEach(async (itemobj) => {
+
         const record = await tx.PipeStock.upsert({
           where: {
             organizationId_size_weight_color: {
@@ -196,26 +197,42 @@ class Pipejobmakerservice {
             size: itemobj.size,
             weight: itemobj.weight,
             color: updatedData.Color,
-            colorcode: updatedData.colorcode,
+            colorcode: data.colorcode,
             stock: itemobj.quantity,
             organization: { connect: { id: data.organization_id } },
           },
         });
+
+
+
+
+
+
+
+
+      let transdata = {
+        stockType: "PIPE",
+        transactionType: "INWARD",
+        organization: { connect: { id: data.organization_id } },
+        jobId: result.jobId,
+        remainingStock: record.stock,
+        quantity: itemobj.quantity,
+        stockId: record.id,
+        pipeStock: { connect: { id: record.id } },
+        note: `Received From ${pipemaker}`,
+      };
+
+      await tx.StockTransaction.create({ data: transdata });
+
+
+
+
+
+
+
       });
 
-      // let transdata = {
-      //   stockType: "PIPE",
-      //   transactionType: "INWARD",
-      //   organization: { connect: { id: data.organization_id } },
-      //   jobId: result.jobId,
-      //   remainingStock: record.stock,
-      //   quantity: data.quantity,
-      //   stockId: record.id,
-      //   pipeStock: { connect: { id: record.id } },
-      //   note: `Received From ${pipemaker}`,
-      // };
 
-      // await tx.StockTransaction.create({ data: transdata });
 
       await tx.pipeItem.update({
         where: { id },
@@ -223,7 +240,7 @@ class Pipejobmakerservice {
       });
 
 
-      console.log("totalrecieved", total);
+
       const jobupdate = await tx.pipeMakerJob.updateMany({
         where: {
           id: result.jobId,
