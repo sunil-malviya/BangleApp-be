@@ -31,79 +31,111 @@ class PipejobController {
       res.someThingWentWrong(error);
     }
   }
-
   static async getPipejobs(req, res) {
     try {
       const organization_id = req.user.organization.id;
       const page = req.query.pageNo ? parseInt(req.query.pageNo, 10) : 1;
       let filter = req.query.filter ? JSON.parse(req.query.filter) : {};
 
+  console.log(filter, "filter");
       let cond = {
         organizationId: organization_id,
         isdeleted: 0,
         status: filter.status,
       };
-
+  
       if (filter.status === 1) {
         cond.pipemakerstatus = { not: 1 };
       }
-
+  
       if (filter.status === 2) {
         cond.pipemakerstatus = 1;
       }
-
+  
       if (filter.dateRange && filter.dateRange.from && filter.dateRange.to) {
+        const fromDate = new Date(filter.dateRange.from);
+        const toDate = new Date(filter.dateRange.to);
+      
+  
+        toDate.setHours(23, 59, 59, 999);
+      
         cond.createdDate = {
-          gte: new Date(filter.dateRange.from),
-          lte: new Date(filter.dateRange.to),
+          gte: fromDate,
+          lte: toDate,
         };
       }
-
+  
       if (
         filter.sizes?.length ||
         filter.weights?.length ||
         filter.colors?.length
       ) {
         let pipeItemsFilter = {};
-
+        let orConditions = [];
+  
+        // Apply Color filter strictly
+        if (filter.colors?.length) {
+          pipeItemsFilter.Color = { in: filter.colors };
+        }
+  
+        // Add sizes into OR condition
         if (filter.sizes?.length) {
-          pipeItemsFilter.size = { in: filter.sizes };
-        }
-
-        if (filter.weights?.length) {
-          pipeItemsFilter.weight = { in: filter.weights };
-        }
-
-        if (filter.colors && filter.colors.length) {
-          let colorConditions = filter.colors.map((colorName) => ({
-            colorQuantities: {
-              array_contains: [{ color: { name: colorName } }],
+          const sizeConditions = filter.sizes.map((size) => ({
+            sizeQuantities: {
+              array_contains: [{ size }],
             },
           }));
-
-          pipeItemsFilter.OR = colorConditions;
+          orConditions.push(...sizeConditions);
         }
-
+  
+        // Add weights into OR condition
+        if (filter.weights?.length) {
+          const weightConditions = filter.weights.map((weight) => ({
+            sizeQuantities: {
+              array_contains: [{ weight }],
+            },
+          }));
+          orConditions.push(...weightConditions);
+        }
+  
+        if (orConditions.length) {
+          pipeItemsFilter.OR = orConditions;
+        }
+  
         cond.pipeItems = { some: pipeItemsFilter };
       }
-
+  
       if (filter.search && filter.search.trim() !== "") {
-        cond.workerOffline = {
-          fullName: {
-            contains: filter.search,
-            mode: "insensitive",
+        cond.OR = [
+          {
+            workerOffline: {
+              fullName: {
+                contains: filter.search,
+                mode: "insensitive",
+              },
+            },
           },
-        };
+          {
+            workerOnline: {
+              fullName: {
+                contains: filter.search,
+                mode: "insensitive",
+              },
+            },
+          },
+        ];
       }
-
+      
+  console.log(cond)
+   
       const records = await PipejobService.getAllPipejob(cond, page);
-
       res.infintescroll(records, page);
     } catch (error) {
       console.log(error);
       res.status(500).json({ error: error.message });
     }
   }
+  
 
   static async getPipejobbyId(req, res) {
     try {

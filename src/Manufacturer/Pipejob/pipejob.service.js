@@ -68,7 +68,11 @@ class Pipejobmakerservice {
       include: {
         organization: true,
         workerOffline: true,
-        workerOnline: true,
+        workerOnline: {
+          include: {
+            organization: true,
+          },
+        },
         pipeItems: true,
       },
       // orderBy: {
@@ -84,7 +88,11 @@ class Pipejobmakerservice {
       include: {
         organization: true,
         workerOffline: true,
-        workerOnline: true,
+        workerOnline: {
+          include: {
+            organization: true,
+          },
+        },
         pipeItems: true,
       },
     });
@@ -127,7 +135,6 @@ class Pipejobmakerservice {
   //----------------------- recieved item  enties --------------------------------------------------///
 
   static async RecievedPipeMark(id, data) {
-    console.log("data", data);
     return await Prisma.$transaction(async (tx) => {
       const result = await tx.pipeItem.findUnique({
         where: { id },
@@ -172,15 +179,15 @@ class Pipejobmakerservice {
       delete result.job;
 
       const updatedData = await this.Findandupdateitem(result);
-   
+
       if (!updatedData) {
         throw new Error("Failed to update item data");
       }
 
-      const total = await this.totalRecievedPipe([updatedData])+totalrecieved
+      const total =
+        (await this.totalRecievedPipe([updatedData])) + totalrecieved;
 
       updatedData.sizeQuantities.forEach(async (itemobj) => {
-
         const record = await tx.PipeStock.upsert({
           where: {
             organizationId_size_weight_color: {
@@ -203,43 +210,25 @@ class Pipejobmakerservice {
           },
         });
 
+        let transdata = {
+          stockType: "PIPE",
+          transactionType: "INWARD",
+          organization: { connect: { id: data.organization_id } },
+          jobId: result.jobId,
+          remainingStock: record.stock,
+          quantity: itemobj.quantity,
+          stockId: record.id,
+          pipeStock: { connect: { id: record.id } },
+          note: `Received From ${pipemaker}`,
+        };
 
-
-
-
-
-
-
-      let transdata = {
-        stockType: "PIPE",
-        transactionType: "INWARD",
-        organization: { connect: { id: data.organization_id } },
-        jobId: result.jobId,
-        remainingStock: record.stock,
-        quantity: itemobj.quantity,
-        stockId: record.id,
-        pipeStock: { connect: { id: record.id } },
-        note: `Received From ${pipemaker}`,
-      };
-
-      await tx.StockTransaction.create({ data: transdata });
-
-
-
-
-
-
-
+        await tx.StockTransaction.create({ data: transdata });
       });
-
-
 
       await tx.pipeItem.update({
         where: { id },
         data: updatedData,
       });
-
-
 
       const jobupdate = await tx.pipeMakerJob.updateMany({
         where: {
@@ -272,7 +261,6 @@ class Pipejobmakerservice {
   };
 
   static async totalRecievedPipe(pipeItems) {
-
     return pipeItems.reduce((total, item) => {
       return total + this.calculateSizewise(item);
     }, 0);
