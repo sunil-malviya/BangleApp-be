@@ -114,7 +114,7 @@ class Orderservice {
       await tx.PipeReminder.create({
         data: {
           title:  `Material Collect from ${updatejob.organization.orgName}`,
-          message: `Please collect the following materials for orderID 00 ${updatejob.jobNumber}: ${materialList}. Provided by ${updatejob.organization.orgName}.`,
+          message: `Please collect the following materials for orderID 00${updatejob.jobNumber}: ${materialList}. Provided by ${updatejob.organization.orgName}.`,
           type: "INFO",
           recipientId: workerId,
           jobId: updatejob.id,
