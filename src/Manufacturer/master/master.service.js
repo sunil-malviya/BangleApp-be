@@ -141,6 +141,93 @@ class MasterService {
     });
   }
 
+  // ------------------------cutting sample master-----------------------------------
+  static async isExistCuttingSampleName(organizationId, sampleName) {
+    return await Prisma.cuttingSample.findFirst({
+      where: {
+        organizationId,
+        sampleName,
+        isDeleted: 0
+      }
+    });
+  }
+
+  static async createCuttingSample(data) {
+    return await Prisma.cuttingSample.create({ data });
+  }
+
+  static async fetchCuttingSamples(condition) {
+    return await Prisma.cuttingSample.findMany({
+      where: condition,
+      orderBy: {
+        sampleName: "asc",
+      },
+      include: {
+        nagina: true
+      }
+    });
+  }
+  
+  static async fetchCuttingSampleById(organizationId, id) {
+    return await Prisma.cuttingSample.findFirst({
+      where: {
+        organizationId,
+        id,
+        isDeleted: 0
+      },
+      include: {
+        nagina: true
+      }
+    });
+  }
+
+  static async updateCuttingSampleById(id, data) {
+    return await Prisma.cuttingSample.update({
+      where: {
+        id
+      },
+      data,
+      include: {
+        nagina: true
+      }
+    });
+  }
+
+  static async deleteCuttingSampleById(organizationId, id) {
+    return await Prisma.cuttingSample.update({
+      where: {
+        organizationId,
+        id
+      },
+      data: {
+        isDeleted: 1
+      }
+    });
+  }
+  
+  static async permanentDeleteCuttingSampleById(organizationId, id) {
+    return await Prisma.cuttingSample.delete({
+      where: {
+        organizationId,
+        id
+      }
+    });
+  }
+
+  static async bulkDeleteCuttingSamples(organizationId, ids) {
+    return await Prisma.cuttingSample.updateMany({
+      where: {
+        organizationId,
+        id: {
+          in: ids
+        }
+      },
+      data: {
+        isDeleted: 1
+      }
+    });
+  }
+
 }
 
 export default MasterService;
