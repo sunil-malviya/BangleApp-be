@@ -55,7 +55,7 @@ export const upload = multer({
   storage,
   limits: { 
     fileSize: 5 * 1024 * 1024,  // Set a 5MB file size limit
-    files: 1                    // Allow only one file per request
+    files: 5                    // Allow mutiple file per request
   },
   fileFilter: (req, file, cb) => {
     try {
