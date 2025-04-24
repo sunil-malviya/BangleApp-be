@@ -316,6 +316,251 @@ console.log("FetchKarigar called",req.query)
       res.status(500).json({ error: error.message });
     }
   }
+
+  // ------------------------cutting sample master-----------------------------------
+
+  static async createCuttingSample(req, res) {
+    try {
+      const body = req.getBody([
+        "sampleName",
+        "cuttingType",
+        "cuttingDepth",
+        "width",
+        "widthUnit",
+        "image",
+        "description",
+        "naginaId",
+      ]);
+
+      body.organizationId = req.user.organization.id;
+
+      // Check if cutting sample with same name already exists
+      const existingSample = await MasterService.isExistCuttingSampleName(
+        body.organizationId,
+        body.sampleName
+      );
+
+      if (existingSample) {
+        return res.status(400).json({
+          status: false,
+          message: "Cutting sample with this name already exists!",
+        });
+      }
+
+      const cuttingSample = await MasterService.createCuttingSample(body);
+
+      return res.status(201).json({
+        status: true,
+        data: cuttingSample,
+        message: "Cutting sample created successfully!",
+      });
+    } catch (error) {
+      console.log(error);
+      res.someThingWentWrong(error);
+    }
+  }
+
+  static async getCuttingSamples(req, res) {
+    try {
+      const organizationId = req.user.organization.id || null;
+      const sampleId = req.params?.id || null;
+      const search =
+        req.query.search && req.query.search !== "undefined"
+          ? req.query.search
+          : false;
+      
+      const cuttingType = req.query.cuttingType || null;
+      const naginaId = req.query.naginaId || null;
+
+      let condition = { 
+        organizationId,
+        isDeleted: 0
+      };
+
+      if (sampleId) {
+        condition.id = sampleId;
+      }
+
+      if (search) {
+        condition.sampleName = { contains: search, mode: "insensitive" };
+      }
+
+      if (cuttingType) {
+        condition.cuttingType = cuttingType;
+      }
+
+      if (naginaId) {
+        condition.naginaId = naginaId;
+      }
+
+      const cuttingSamples = await MasterService.fetchCuttingSamples(condition);
+
+      return res.status(200).json({
+        status: true,
+        data: cuttingSamples,
+        message:
+          cuttingSamples.length > 0
+            ? "Cutting samples retrieved successfully!"
+            : "No cutting samples found!",
+      });
+    } catch (error) {
+      console.log(error);
+      res.someThingWentWrong(error);
+    }
+  }
+
+  static async getCuttingSampleById(req, res) {
+    try {
+      const organizationId = req.user.organization.id;
+      const sampleId = String(req.params.id);
+
+      const cuttingSample = await MasterService.fetchCuttingSampleById(
+        organizationId,
+        sampleId
+      );
+
+      if (!cuttingSample) {
+        return res.status(404).json({
+          status: false,
+          message: "Cutting sample not found!",
+        });
+      }
+
+      return res.status(200).json({
+        status: true,
+        data: cuttingSample,
+        message: "Cutting sample retrieved successfully!",
+      });
+    } catch (error) {
+      console.log(error);
+      res.someThingWentWrong(error);
+    }
+  }
+
+  static async updateCuttingSampleById(req, res) {
+    try {
+      const body = req.getBody([
+        "sampleName",
+        "cuttingType",
+        "cuttingDepth",
+        "width",
+        "widthUnit",
+        "image",
+        "description",
+        "naginaId",
+      ]);
+
+      body.organizationId = req.user.organization.id;
+      const sampleId = String(req.params.id);
+
+      // Check if the sample exists
+      const existingSample = await MasterService.fetchCuttingSampleById(
+        body.organizationId,
+        sampleId
+      );
+
+      if (!existingSample) {
+        return res.status(404).json({
+          status: false,
+          message: "Cutting sample not found!",
+        });
+      }
+
+      // Check if name already exists (but only if name is being changed)
+      if (
+        body.sampleName && 
+        existingSample.sampleName !== body.sampleName
+      ) {
+        const nameExists = await MasterService.isExistCuttingSampleName(
+          body.organizationId,
+          body.sampleName
+        );
+
+        if (nameExists) {
+          return res.status(400).json({
+            status: false,
+            message: "Cutting sample with this name already exists!",
+          });
+        }
+      }
+
+      const updatedSample = await MasterService.updateCuttingSampleById(
+        sampleId,
+        body
+      );
+
+      return res.status(200).json({
+        status: true,
+        data: updatedSample,
+        message: "Cutting sample updated successfully!",
+      });
+    } catch (error) {
+      console.log(error);
+      res.someThingWentWrong(error);
+    }
+  }
+
+  static async deleteCuttingSampleById(req, res) {
+    try {
+      const organizationId = req.user.organization.id;
+      const sampleId = String(req.params.id);
+
+      // Check if the sample exists
+      const existingSample = await MasterService.fetchCuttingSampleById(
+        organizationId,
+        sampleId
+      );
+
+      if (!existingSample) {
+        return res.status(404).json({
+          status: false,
+          message: "Cutting sample not found!",
+        });
+      }
+
+      // Soft delete the sample
+      await MasterService.deleteCuttingSampleById(
+        organizationId,
+        sampleId
+      );
+
+      return res.status(200).json({
+        status: true,
+        message: "Cutting sample deleted successfully!",
+      });
+    } catch (error) {
+      console.log(error);
+      res.someThingWentWrong(error);
+    }
+  }
+
+  static async bulkDeleteCuttingSamples(req, res) {
+    try {
+      const organizationId = req.user.organization.id;
+      const { ids } = req.body;
+
+      if (!ids || !Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({
+          status: false,
+          message: "Please provide a valid array of sample IDs!",
+        });
+      }
+
+      // Soft delete multiple samples
+      await MasterService.bulkDeleteCuttingSamples(
+        organizationId,
+        ids
+      );
+
+      return res.status(200).json({
+        status: true,
+        message: `${ids.length} cutting sample(s) deleted successfully!`,
+      });
+    } catch (error) {
+      console.log(error);
+      res.someThingWentWrong(error);
+    }
+  }
 }
 
 export default MasterController;
