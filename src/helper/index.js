@@ -1,12 +1,11 @@
 `use strict`;
 import express from 'express';
 const router = express.Router();
-import  {upload}  from '../../middleware/upload.js';
-import { uploadImage, deleteImage } from './upload.service.js'
+import { upload, handleMulterError } from '../../middleware/upload.js';
+import { uploadImage, deleteImage } from './upload.service.js';
 
-
-
-router.post('/image-upload?', upload.single('image'), uploadImage);
+// Use error handling middleware after upload
+router.post('/image-upload', upload.single('image'), handleMulterError, uploadImage);
 router.delete('/image-delete/:designation/:filename', deleteImage);
 
 /**********************************************/

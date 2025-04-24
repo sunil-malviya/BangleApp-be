@@ -58,6 +58,7 @@ model Organization {
   cuttingStocks CuttingStock[]
   stockTransactions StockTransaction[]
   applicationSettings ApplicationSettings[]
+  cuttingSamples CuttingSample[]
 }
 
 enum OrganizationType {
@@ -173,6 +174,7 @@ model Nagina {
   updatedAt      DateTime      @updatedAt
   cuttingItems   CuttingItem[]
   cuttingStocks  CuttingStock[]
+  cuttingSamples CuttingSample[]
 }
 
 model Pipesize {
@@ -455,4 +457,36 @@ model PipeRawMaterialLog {
 
   updatedAt       DateTime  @updatedAt
   createdAt       DateTime  @default(now())
+}
+
+enum CuttingType {
+  NO_SAP
+  V_SAP
+  SQUARE_SAP
+  HOLES
+  OTHER
+}
+
+enum CuttingDepth {
+  NORMAL
+  MEDIUM
+  HEAVY
+}
+
+model CuttingSample {
+  id               String        @id @default(uuid())
+  sampleName       String
+  cuttingType      CuttingType   @default(NO_SAP)
+  cuttingDepth     CuttingDepth?  @default(NORMAL)
+  width            Float
+  widthUnit        Unit          @default(mm)
+  image            String?
+  description      String?
+  naginaId         String?
+  nagina           Nagina?       @relation(fields: [naginaId], references: [id])
+  organizationId   String
+  organization     Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  isDeleted        Int           @default(0)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 }

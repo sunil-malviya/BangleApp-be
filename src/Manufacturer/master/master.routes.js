@@ -69,4 +69,34 @@ router.delete("/nagina/:id",
 // Define the new route for fetching online Karigars
 router.get("/online-karigar", MasterController.FetchKarigar);
 
+// --------------------------cutting sample routes---------------------------------------------
+
+router.get("/cutting-sample/detail/:id", 
+  MasterController.getCuttingSampleById
+);
+
+router.get("/cutting-sample/:id?", 
+  MasterController.getCuttingSamples
+);
+
+router.post("/cutting-sample/", 
+  // For validation you may add: asyncValidate("cutting_sample"),
+  showParametersErrors,
+  MasterController.createCuttingSample
+);
+
+router.put("/cutting-sample/:id", 
+  // For validation you may add: checkInput("cutting_sample"),
+  showParametersErrors,
+  MasterController.updateCuttingSampleById
+);
+
+router.delete("/cutting-sample/:id", 
+  MasterController.deleteCuttingSampleById
+);
+
+router.post("/cutting-sample/bulk-delete", 
+  MasterController.bulkDeleteCuttingSamples
+);
+
 export default router;
