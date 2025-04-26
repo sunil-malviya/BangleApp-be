@@ -108,7 +108,7 @@ class Orderservice {
       }
 
       const materialList = updatejob.materialDetails
-        .map((mat) => `${mat.name} (${mat.quantity})`)
+        .map((mat) => `${mat.name}  ${mat.quantity}`)
         .join(", ");
 
       await tx.PipeReminder.create({

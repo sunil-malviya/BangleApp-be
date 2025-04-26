@@ -127,7 +127,7 @@ class OrderController {
       
       const userId = req.user.id;
       const records = await Orderservice.getMaterailreminder({recipientId:userId,isRead:false});
-console.log(records);
+;
       res.success(records);
     } catch (error) {
       console.log(error);
