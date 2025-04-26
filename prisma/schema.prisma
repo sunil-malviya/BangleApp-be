@@ -154,9 +154,10 @@ model PipeItem {
   Color           String
   color_code      String
   lotsize         String
+  pipetype        String
   rate            Float
   rateType        String
-  sizeQuantities Json   
+  sizeQuantities  Json   
   total_qty       Int
   total_item      Int
   isdeleted       Int   @default(0) /// 1 = deleted and 0 not 
@@ -222,6 +223,18 @@ model Lotsize {
      label          String
      value          String
      organizationId String        @default("0")
+     isdeleted      Int           @default(0) /// 1 = deleted and 0 not  
+     createdAt      DateTime      @default(now())
+     updatedAt      DateTime      @updatedAt
+}
+
+
+ 
+model Pipetype {
+     id             String        @id @default(uuid())
+     label          String
+     value          String
+
      isdeleted      Int           @default(0) /// 1 = deleted and 0 not  
      createdAt      DateTime      @default(now())
      updatedAt      DateTime      @updatedAt
@@ -339,6 +352,7 @@ model PipeStock {
   weight         String
   color          String
   colorcode      String             @default("dddddd")
+
   stock          Int
   isdeleted      Int                @default(0) /// 1 = deleted and 0 not
   createdAt      DateTime           @default(now())
@@ -348,8 +362,9 @@ model PipeStock {
   cuttingItems   CuttingItem[]
   transactions   StockTransaction[]
   PerPipeWeight  Float? 
+  pipetype        String
   
-  @@unique([organizationId, size, weight, color])
+  @@unique([organizationId, size, weight, color,pipetype])
 }
 
 model CuttingStock {

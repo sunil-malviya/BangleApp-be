@@ -180,21 +180,27 @@ class Pipejobmakerservice {
 
       const updatedData = await this.Findandupdateitem(result);
 
+
       if (!updatedData) {
         throw new Error("Failed to update item data");
       }
 
       const total =
         (await this.totalRecievedPipe([updatedData])) + totalrecieved;
+     
 
       updatedData.sizeQuantities.forEach(async (itemobj) => {
+       
+   
         const record = await tx.PipeStock.upsert({
           where: {
-            organizationId_size_weight_color: {
+            organizationId_size_weight_color_pipetype: {
               organizationId: data.organization_id,
               size: itemobj.size,
               weight: itemobj.weight,
               color: updatedData.Color,
+              pipetype : updatedData.pipetype,
+
             },
           },
           update: {
@@ -206,6 +212,7 @@ class Pipejobmakerservice {
             color: updatedData.Color,
             colorcode: data.colorcode,
             stock: itemobj.quantity,
+            pipetype : updatedData.pipetype,
             organization: { connect: { id: data.organization_id } },
           },
         });
