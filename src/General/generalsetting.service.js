@@ -9,14 +9,14 @@ class Pipejobmakerservice {
     });
 
     const color = await Prisma.color.findMany();
-    
+
     const Pipeweight = await Prisma.PipeWeight.findMany();
-        
+
     const PipeMaterail = await Prisma.Material.findMany();
     const Lotsize = await Prisma.Lotsize.findMany();
+    const Pipetype = await Prisma.Pipetype.findMany();
 
-
-    return { pipesize, color,Pipeweight,PipeMaterail,Lotsize };
+    return { pipesize, color, Pipeweight, PipeMaterail, Pipetype, Lotsize };
   }
 }
 
