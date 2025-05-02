@@ -173,7 +173,6 @@ model Nagina {
   isdeleted      Int           @default(0) /// 1 = deleted and 0 not  
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
-  cuttingItems   CuttingItem[]
   cuttingStocks  CuttingStock[]
   cuttingSamples CuttingSample[]
 }
@@ -255,10 +254,10 @@ model CuttingKarigarJob {
   workerOffline    Worker? @relation(fields: [workerOfflineId], references: [id])
   createdDate      DateTime
   completionDate   DateTime?
-  totalAvgBangleQty Int
-  totalPipeQty      Int
-  totalitem         Int
-  totalPrice        Float
+  totalAvgBangleQty Int?
+  totalPipeQty      Int?
+  totalitem         Int?
+  totalPrice        Float?
   cuttingItems      CuttingItem[]
   note             String?
   status           Int   //  -  0 draft, 1 pending (online), 2 completed, 3 in progress (offline)
@@ -273,17 +272,19 @@ model CuttingItem {
   pipeStockId      String
   pipeStock        PipeStock     @relation(fields: [pipeStockId], references: [id])
   pipeQty          Int
-  AvgBangleQty     Int
-  bangleWidth      Int
-  naginaId         String
-  nagina           Nagina        @relation(fields: [naginaId], references: [id])
+  AvgBangleQty     Int?
   isdeleted        Int           @default(0) /// 1 = deleted and 0 not
-  perPipeCuttingPrice Float
-  receivedQty      Int
+  perPipeCuttingPrice Float?
+  receivedQty      Int        @default(0)
   receivedDate     DateTime?
   receivedLog      Json?
-  unit            Unit
-  totalItemBangles Int           @default(0)
+  totalItemBangles Int?           @default(0)
+  // Lot information
+  lotNo           Int            @default(1)
+  lotColor        Json?          @default("{\"color\": \"dddddd\", \"code\": \"dddddd\"}")
+  lotQty          Int            @default(0)
+  cuttingSampleId  String?
+  cuttingSample    CuttingSample? @relation(fields: [cuttingSampleId], references: [id])
 }
 
 enum StockType {
@@ -504,4 +505,5 @@ model CuttingSample {
   isDeleted        Int           @default(0)
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
+  cuttingItems     CuttingItem[]
 }
