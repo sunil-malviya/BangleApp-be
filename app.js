@@ -49,6 +49,7 @@ const corsOptions = {
   origin: [
     'http://localhost:8081', // React Native dev server
     'http://192.168.1.5:8081', // Your local IP
+    'http://192.168.1.11:8081', // Your local IP
     'exp://192.168.1.5:19000', // Expo dev client
     'your-app://' // Production app bundle ID
   ],
